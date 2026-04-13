@@ -2,908 +2,843 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>煤质指标计算系统（最终完整版）</title>
+<title>煤质数据库系统（最终修复版）</title>
 <style>
-* {
-    box-sizing: border-box;
-    font-family: "Microsoft YaHei", sans-serif;
-    margin: 0;
-    padding: 0;
-}
+    * {
+        box-sizing: border-box;
+        font-family: "Microsoft YaHei", sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+    html, body {
+        height: 100%;
+        background: #f5f6fa;
+        padding: 10px;
+    }
+    .main {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 16px;
+        width: 100%;
+        height: 100%;
+        min-height: calc(100vh - 20px);
+    }
+    .left {
+        width: fit-content;
+        flex-shrink: 0;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        overflow-y: auto;
+        height: 100%;
+    }
+    .left h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+        white-space: nowrap;
+    }
+    .form {
+        display: grid;
+        grid-template-columns: repeat(3, 150px);
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+    .form input {
+        height: 32px;
+        padding: 4px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        outline: none;
+        font-size: 15px;
+    }
+    .form input:focus {
+        border-color: #4096ff;
+    }
+    button {
+        min-width: 70px;
+        height: 32px;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-right: 4px;
+        font-size: 14px;
+        margin-bottom: 6px;
+        flex-shrink: 0;
+        padding: 0 10px;
+    }
+    button:hover {
+        opacity: 0.92;
+    }
+    .db-table button {
+        width: 50px;
+        height: 26px;
+        font-size: 13px;
+        margin: 1px;
+    }
+    .btn-primary { background: #4096ff; }
+    .btn-warning { background: #ff9f43; }
+    .btn-success { background: #1dd1a1; }
+    .btn-danger  { background: #ff6b6b; }
+    .btn-purple  { background: #70a1ff; }
+    .btn-gray    { background: #909399; }
 
-html, body {
-    height: 100%;
-    background: #f5f7fa;
-    padding: 10px;
-}
+    /* 按钮行样式 */
+    .btn-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 12px;
+    }
 
-.main {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 16px;
-    width: 100%;
-    min-height: calc(100vh - 20px);
-}
+    .rock-box {
+        margin: 12px 0;
+        padding: 12px;
+        border: 1px dashed #ccc;
+        border-radius: 4px;
+    }
+    .rock-preview {
+        max-width: 130px;
+        max-height: 90px;
+        margin-top: 8px;
+        border-radius: 4px;
+        display: none;
+        object-fit: cover;
+    }
+    #rockImg { display: none; }
 
-/* 恢复原来左侧宽度，不缩小 */
-.left {
-    width: 680px;
-    flex-shrink: 0;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    overflow-y: auto;
-}
+    .db-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 14px;
+    }
+    .db-table th, .db-table td {
+        border: 1px solid #e5e6eb;
+        padding: 8px 10px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    .db-table th {
+        background: #f0f5ff;
+        font-weight: 500;
+    }
 
-.left h3 {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 15px;
-}
+    .right {
+        flex: 1;
+        background: white;
+        padding: 22px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        overflow: auto;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .right h3 {
+        font-size: 18px;
+        margin-bottom: 12px;
+    }
+    .rate-tip {
+        color: #ff6b6b;
+        font-size: 14px;
+        margin: 8px 0;
+        font-weight: 500;
+    }
+    .right-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
 
-/* 一排 3 个输入框 */
-.form {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 15px;
-}
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        font-size: 16px;
+        table-layout: auto;
+    }
+    .data-table th {
+        background: #4096ff;
+        color: #fff;
+        padding: 10px 8px;
+        border: 1px solid #3088f0;
+        height: 41px;
+        white-space: nowrap;
+    }
+    .data-table td {
+        border: 1px solid #e5e6eb;
+        padding: 8px 8px;
+        text-align: center;
+        white-space: nowrap;
+        height: 41px;
+    }
+    .data-table tr:nth-child(even):not(.avg-row) {
+        background-color: #fafbfc;
+    }
+    .data-table tr:hover:not(.avg-row) {
+        background-color: #f0f7ff !important;
+    }
+    .avg-row {
+        background: #fff7e6 !important;
+        font-weight: bold;
+        color: #d46100 !important;
+    }
+    .avg-row td { border-top: 2px solid #ffc069 !important; }
+    .data-table input {
+        width: 100%;
+        height: 30px;
+        text-align: center;
+        border: 1px solid #dcdfe6;
+        border-radius: 4px;
+        outline: none;
+        font-size: 15px;
+    }
 
-.form input {
-    padding: 6px;
-    width: 100%;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    outline: none;
-    font-size:13px;
-}
-.form input:focus {
-    border-color: #2d8cf0;
-}
-
-button {
-    padding: 5px 8px;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    margin-right: 4px;
-    font-size: 12px;
-    margin-bottom: 6px;
-}
-button:hover {
-    opacity: 0.9;
-}
-.btn-primary { background: #2d8cf0; }
-.btn-warning { background: #ff9500; }
-.btn-success { background: #19be6b; }
-.btn-danger  { background: #f56c6c; }
-.btn-purple  { background: #722ed1; }
-
-.rock-box {
-    margin: 12px 0;
-    padding: 12px;
-    border: 1px dashed #ccc;
-    border-radius: 4px;
-}
-.rock-preview {
-    max-width: 130px;
-    max-height: 90px;
-    margin-top: 8px;
-    border-radius: 4px;
-    display: none;
-    object-fit: cover;
-}
-#rockImg { display: none; }
-
-.db-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 12px;
-    font-size: 12px;
-}
-.db-table th, .db-table td {
-    border: 1px solid #ddd;
-    padding: 6px;
-    text-align: center;
-    white-space: nowrap;
-}
-.db-table th {
-    background: #f0f5ff;
-}
-
-.right {
-    flex: 1;
-    min-width: 600px;
-    background: white;
-    padding: 22px;
-    border-radius: 10px;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.07);
-    overflow-x: auto;
-}
-
-.right h3 {
-    font-size: 16px;
-    color: #333;
-    margin-bottom: 12px;
-}
-
-.data-table {
-    width: 100%;
-    min-width: 900px;
-    border-collapse: collapse;
-    margin-top: 10px;
-    font-size: 14px;
-    background: #fff;
-}
-
-.data-table th {
-    background: #4096ff;
-    color: #fff;
-    font-weight: 500;
-    padding: 10px 6px;
-    border: 1px solid #3088f0;
-}
-
-.data-table td {
-    border: 1px solid #e5e6eb;
-    padding: 8px 6px;
-    text-align: center;
-    white-space: nowrap;
-    transition: background 0.2s;
-}
-
-.data-table tr:nth-child(even):not(.avg-row) {
-    background-color: #fafbfc;
-}
-.data-table tr:hover:not(.avg-row) {
-    background-color: #f0f7ff !important;
-}
-
-.data-table th:first-child,
-.data-table td:first-child {
-    width: 50px !important;
-    min-width: 50px !important;
-    max-width: 50px !important;
-}
-
-.data-table input {
-    width: 72px;
-    height: 28px;
-    text-align: center;
-    border: 1px solid #dcdfe6;
-    border-radius: 4px;
-    padding: 0 4px;
-    outline: none;
-}
-.data-table input:focus {
-    border-color: #4096ff;
-}
-
-.avg-row {
-    background: #fff7e6 !important;
-    font-weight: bold;
-    color: #d46b08 !important;
-}
-.avg-row td {
-    border-top: 2px solid #ffc069 !important;
-}
-
-.search {
-    margin-bottom: 10px;
-}
-
-/* 岩相弹窗 */
-.rock-modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.75);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    display: none;
-    padding: 20px;
-}
-.rock-modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    max-width: 95%;
-    max-height: 90vh;
-    width: auto;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-/* 图片点击放大缩小 */
-#rockModalImg {
-    max-width: 100%;
-    max-height: 50vh;
-    border-radius: 6px;
-    display: block;
-    margin: 0 auto;
-    cursor: zoom-in;
-    transition: all 0.3s;
-}
-#rockModalImg.zoomed {
-    max-height: 85vh;
-    cursor: zoom-out;
-}
-.rock-modal-bar {
-    display: flex;
-    gap: 8px;
-    margin-top: 5px;
-}
-.rock-modal-close {
-    margin-top: 10px;
-    text-align: center;
-}
-
-/* 删除岩相表格第一行表头 */
-#rockDataTable {
-    width: 100%;
-    border-collapse: collapse;
-    background: #fff;
-    font-size: 13px;
-}
-#rockDataTable th,
-#rockDataTable td {
-    border: 1px solid #ddd;
-    padding: 8px 4px;
-    text-align: center;
-    min-width: 80px;
-}
-#rockDataTable th {
-    background: #f0f5ff;
-}
-#rockDataTable input {
-    width: 100%;
-    border: none;
-    text-align: center;
-    padding: 4px;
-    font-size: 13px;
-    outline: none;
-}
-#rockDataTable input:focus {
-    background: #e6f7ff;
-    border-radius: 3px;
-}
-.fixed-row {
-    background: #f7f8fa !important;
-    color: #333 !important;
-    font-weight: 500;
-}
-
-.avg-rock-modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    display: none;
-    padding: 20px;
-}
-.avg-rock-modal-content {
-    background: #fff;
-    padding: 25px;
-    border-radius: 10px;
-    width: 95%;
-    max-width: 1000px;
-    max-height: 90vh;
-    overflow-y: auto;
-}
-.avg-rock-modal-content h4 {
-    margin-bottom: 15px;
-    color: #333;
-    text-align: center;
-}
-.avg-rock-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-.avg-rock-table th, .avg-rock-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: center;
-}
-.avg-rock-table th {
-    background: #4096ff;
-    color: #fff;
-}
-
-/* 备忘录弹窗 */
-.memo-modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    display: none;
-}
-.memo-modal-content {
-    background: #fff;
-    width: 90%;
-    max-width: 700px;
-    max-height: 80vh;
-    padding: 20px;
-    border-radius: 10px;
-    overflow-y: auto;
-}
-.memo-modal-content h4 {
-    margin-bottom: 12px;
-}
-.memo-input {
-    width: 100%;
-    height: 70px;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin-bottom: 8px;
-}
-.memo-list {
-    max-height: 300px;
-    overflow-y: auto;
-    margin-top: 10px;
-}
-.memo-item {
-    padding: 8px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-}
-.memo-item:hover {
-    background: #f5f7fa;
-}
+    /* 弹窗样式 */
+    .modal {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.65);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        display: none;
+        padding: 20px;
+    }
+    .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        max-width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        width: 1000px;
+    }
+    #rockModalImg {
+        max-width: 100%;
+        max-height: 300px;
+        border-radius: 6px;
+        display: block;
+        margin: 0 auto;
+    }
+    /* 移除图表相关样式 */
+    .rock-table {
+        width: 100% !important;
+        table-layout: fixed;
+        border-collapse: collapse;
+        font-size: 15px;
+        margin: 10px 0;
+    }
+    .rock-table th, .rock-table td {
+        border: 1px solid #ddd;
+        padding: 8px 4px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    .rock-table th { background: #f0f5ff; }
+    .rock-table input {
+        width: 100%;
+        height: 28px;
+        border: 1px solid #ddd;
+        text-align: center;
+        font-size: 14px;
+    }
+    .fixed-row {
+        background: #f7f8fa !important;
+        font-weight: 500;
+    }
+    .rock-tip {
+        color: #ff6b6b;
+        font-size: 13px;
+        margin: 5px 0;
+        text-align: center;
+    }
+    #fileImport {
+        display: none;
+    }
 </style>
 </head>
-
 <body>
 
-<!-- 岩相弹窗（已删除第一列表头） -->
-<div class="rock-modal" id="rockModal">
-    <div class="rock-modal-content">
-        <img id="rockModalImg" onclick="toggleZoom()">
-        
-        <div class="rock-modal-bar">
+<!-- 左侧岩相弹窗 -->
+<div class="modal" id="rockModal">
+    <div class="modal-content">
+        <img id="rockModalImg">
+        <div style="margin:10px 0; text-align:center">
             <button class="btn-primary" onclick="saveRockData()">保存岩相数据</button>
+            <button class="btn-danger" onclick="deleteCurrentRockImage()">删除图片</button>
+            <button class="btn-primary" onclick="closeRockModal()">关闭</button>
         </div>
-
-        <table id="rockDataTable">
-            <tbody>
-                <tr class="fixed-row">
-                    <td>粒径区间</td>
-                    <td>＜0.47</td>
-                    <td>0.47-0.58</td>
-                    <td>0.58-0.75</td>
-                    <td>0.75-0.90</td>
-                    <td>0.90-1.13</td>
-                    <td>1.13-1.53</td>
-                    <td>1.53-1.70</td>
-                    <td>1.70-1.90</td>
-                    <td>1.90-2.35</td>
-                    <td>＞2.35</td>
-                </tr>
-                <tr>
-                    <td>含量（%）</td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                    <td><input type="number" step="0.01" class="rock-edit"></td>
-                </tr>
-                <tr class="fixed-row">
-                    <td>煤种</td>
-                    <td>褐煤</td>
-                    <td>长焰煤</td>
-                    <td>气煤</td>
-                    <td>1/3焦</td>
-                    <td>肥煤</td>
-                    <td>焦煤</td>
-                    <td>瘦煤</td>
-                    <td>贫瘦煤</td>
-                    <td>贫煤</td>
-                    <td>无烟煤</td>
-                </tr>
-            </tbody>
+        <div class="rock-tip" id="rockDataTip">粒径含量总和应接近100%（当前：0.00%）</div>
+        <table class="rock-table">
+            <tr class="fixed-row">
+                <td>粒径区间</td>
+                <td>＜0.47</td><td>0.47-0.58</td><td>0.58-0.75</td><td>0.75-0.90</td>
+                <td>0.90-1.13</td><td>1.13-1.53</td><td>1.53-1.70</td><td>1.70-1.90</td>
+                <td>1.90-2.35</td><td>＞2.35</td>
+            </tr>
+            <tr>
+                <td>含量（%）</td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+                <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
+            </tr>
+            <tr class="fixed-row">
+                <td>煤种</td>
+                <td>褐煤</td><td>长焰煤</td><td>气煤</td><td>1/3焦</td><td>肥煤</td>
+                <td>焦煤</td><td>瘦煤</td><td>贫瘦煤</td><td>贫煤</td><td>无烟煤</td>
+            </tr>
         </table>
-
-        <div class="rock-modal-close">
-            <button onclick="closeRockModal()" class="btn-primary">关闭</button>
-        </div>
     </div>
 </div>
 
-<!-- 加权岩相弹窗 -->
-<div class="avg-rock-modal" id="avgRockModal">
-    <div class="avg-rock-modal-content">
-        <h4>加权平均岩相分析数据</h4>
-        <table class="avg-rock-table" id="avgRockTable">
-            <thead>
-                <tr>
-                    <th>粒径区间</th>
-                    <th>＜0.47</th><th>0.47-0.58</th><th>0.58-0.75</th><th>0.75-0.90</th><th>0.90-1.13</th>
-                    <th>1.13-1.53</th><th>1.53-1.70</th><th>1.70-1.90</th><th>1.90-2.35</th><th>＞2.35</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>加权含量</td>
-                    <td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td>
-                    <td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td>
-                </tr>
-            </tbody>
+<!-- 右侧加权岩相弹窗（移除图表） -->
+<div class="modal" id="avgRockModal">
+    <div class="modal-content">
+        <h3 style="text-align:center; margin-bottom:10px">岩相加权平均正态分布分析</h3>
+        <!-- 移除图表相关HTML -->
+        <div class="rock-tip">加权粒径含量总和：<span id="avgRockSum">0.00</span>%</div>
+        <table class="rock-table">
+            <tr class="fixed-row">
+                <td>粒径区间</td>
+                <td>＜0.47</td><td>0.47-0.58</td><td>0.58-0.75</td><td>0.75-0.90</td>
+                <td>0.90-1.13</td><td>1.13-1.53</td><td>1.53-1.70</td><td>1.70-1.90</td>
+                <td>1.90-2.35</td><td>＞2.35</td>
+            </tr>
+            <tr>
+                <td>加权含量（%）</td>
+                <td id="c1">0.00</td>
+                <td id="c2">0.00</td>
+                <td id="c3">0.00</td>
+                <td id="c4">0.00</td>
+                <td id="c5">0.00</td>
+                <td id="c6">0.00</td>
+                <td id="c7">0.00</td>
+                <td id="c8">0.00</td>
+                <td id="c9">0.00</td>
+                <td id="c10">0.00</td>
+            </tr>
+            <tr class="fixed-row">
+                <td>煤种</td>
+                <td>褐煤</td><td>长焰煤</td><td>气煤</td><td>1/3焦</td><td>肥煤</td>
+                <td>焦煤</td><td>瘦煤</td><td>贫瘦煤</td><td>贫煤</td><td>无烟煤</td>
+            </tr>
         </table>
-        <div style="text-align:center">
-            <button onclick="closeAvgRockModal()" class="btn-primary">关闭</button>
+        <div style="text-align:center; margin-top:15px">
+            <button class="btn-primary" onclick="closeAvgRockModal()">关闭</button>
         </div>
     </div>
 </div>
 
-<!-- 备忘录弹窗 -->
-<div class="memo-modal" id="memoModal">
-    <div class="memo-modal-content">
-        <h4>📝 备忘录</h4>
-        <textarea class="memo-input" id="memoInput" placeholder="输入内容..."></textarea>
-        <div>
-            <button onclick="addMemo()" class="btn-success">添加</button>
-            <button onclick="editMemo()" class="btn-warning">修改</button>
-            <button onclick="delMemo()" class="btn-danger">删除</button>
-            <button onclick="closeMemoModal()" class="btn-primary" style="float:right">关闭</button>
-        </div>
-        <div class="memo-list" id="memoList"></div>
-    </div>
-</div>
-
-<!-- 主布局 -->
+<!-- 主界面 -->
 <div class="main">
     <div class="left">
         <h3>煤质数据库</h3>
         <div class="form">
             <input id="name" placeholder="名称" required>
-            <input id="ash" placeholder="灰分" type="number" step="0.01">
-            <input id="sulfur" placeholder="硫" type="number" step="0.01">
-            <input id="vol" placeholder="挥发" type="number" step="0.01">
-            <input id="bond" placeholder="粘结" type="number" step="0.01">
-            <input id="water" placeholder="水分" type="number" step="0.01">
-            <input id="y" placeholder="Y值" type="number" step="0.01">
-            <input id="heat" placeholder="热强" type="number" step="0.01">
-            <input id="cost" placeholder="成本" type="number" step="0.01">
+            <input id="ash" placeholder="灰分" type="number" step="0.01" min="0" max="100">
+            <input id="sulfur" placeholder="硫" type="number" step="0.01" min="0" max="100">
+            <input id="vol" placeholder="挥发" type="number" step="0.01" min="0" max="100">
+            <input id="bond" placeholder="粘结" type="number" step="0.01" min="0" max="100">
+            <input id="water" placeholder="水分" type="number" step="0.01" min="0" max="100">
+            <input id="y" placeholder="Y值" type="number" step="0.01" min="0" max="100">
+            <input id="heat" placeholder="热强" type="number" step="0.01" min="0" max="100">
+            <input id="cost" placeholder="成本" type="number" step="0.01" min="0">
         </div>
-
         <div class="rock-box">
             <button class="btn-purple" onclick="selectRockImage()">岩相图片</button>
+            <button class="btn-danger" onclick="clearRockImage()">清空图片</button>
             <img id="rockPreview" class="rock-preview">
             <input type="file" id="rockImg" accept="image/*">
         </div>
-
-        <button onclick="add()" class="btn-primary">添加数据</button>
-        <button onclick="updateSave()" id="updateBtn" style="display:none;" class="btn-warning">保存修改</button>
-        <button onclick="openMemoModal()" class="btn-purple">备忘录</button>
-
+        
+        <!-- 按钮行：添加数据 + 导出 + 导入 同排 -->
+        <div class="btn-row">
+            <button onclick="add()" class="btn-primary">添加数据</button>
+            <button onclick="exportData()" class="btn-success">导出数据库</button>
+            <button onclick="document.getElementById('fileImport').click()" class="btn-warning">导入数据库</button>
+            <button onclick="updateSave()" id="updateBtn" style="display:none;" class="btn-warning">保存修改</button>
+        </div>
+        
+        <input type="file" id="fileImport" accept=".json" onchange="importData(event)">
+        
         <table class="db-table">
-            <tr>
-                <th>名称</th><th>灰分</th><th>硫</th><th>挥发</th><th>粘结</th>
-                <th>水分</th><th>Y值</th><th>热强</th><th>成本</th><th>操作</th>
-            </tr>
+            <tr><th>名称</th><th>灰分</th><th>硫</th><th>挥发</th><th>粘结</th><th>水分</th><th>Y值</th><th>热强</th><th>成本</th><th>操作</th></tr>
             <tbody id="dbList"></tbody>
         </table>
     </div>
 
     <div class="right">
-        <h3>煤质指标计算表（加权平均）</h3>
-        <div class="search">
-            <button onclick="clearTable()" class="btn-danger">清空表格</button>
+        <div class="right-header">
+            <h3>煤质指标计算表（加权平均）</h3>
+            <div>
+                <button onclick="clearTable()" class="btn-danger">清空表格</button>
+            </div>
         </div>
-
+        <div class="rate-tip" id="rateSumTip">比例总和：0.00%（建议为100%）</div>
         <table class="data-table">
             <thead>
-                <tr>
-                    <th>行号</th>
-                    <th>名称</th>
-                    <th>灰分</th>
-                    <th>硫</th>
-                    <th>挥发</th>
-                    <th>粘结</th>
-                    <th>水分</th>
-                    <th>Y值</th>
-                    <th>热强</th>
-                    <th>成本</th>
-                    <th>比例</th>
-                    <th>操作</th>
-                </tr>
+                <tr><th>行号</th><th>名称</th><th>灰分</th><th>硫</th><th>挥发</th><th>粘结</th><th>水分</th><th>Y值</th><th>热强</th><th>成本</th><th>比例(%)</th><th>操作</th></tr>
             </thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>
 </div>
 
+<!-- 移除Chart.js引入 -->
 <script>
-const db = JSON.parse(localStorage.getItem('coalDB')) || []
-let editIndex = -1
-let currentRockBase64 = ''
-let currentRockEditIndex = -1
+    const db = JSON.parse(localStorage.getItem('coalDB')) || []
+    let editIndex = -1
+    let currentRockBase64 = ''
+    let currentRockEditIndex = -1
 
-// 备忘录
-let memoList = JSON.parse(localStorage.getItem('memos')) || []
-let currentMemoIndex = -1
-
-window.addEventListener('DOMContentLoaded', () => {
-    renderDB()
-    renderTable()
-    calcAvg()
-    initImagePreview()
-    renderMemo()
-})
-
-// 图片放大缩小
-function toggleZoom(){
-    const img = document.getElementById('rockModalImg')
-    img.classList.toggle('zoomed')
-}
-
-function renderDB() {
-    const listEl = document.getElementById('dbList')
-    let html = ''
-    db.forEach((item, i) => {
-        html += `
-        <tr>
-            <td>${item.name}</td>
-            <td>${parseFloat(item.ash || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.sulfur || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.vol || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.bond || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.water || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.y || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.heat || 0).toFixed(2)}</td>
-            <td>${parseFloat(item.cost || 0).toFixed(2)}</td>
-            <td>
-                <button class="btn-success" onclick="addToTable(${i})">添加</button>
-                <button class="btn-purple" onclick="showRockModal(${i})">岩相</button>
-                <button class="btn-warning" onclick="edit(${i})">修改</button>
-                <button class="btn-danger" onclick="del(${i})">删</button>
-            </td>
-        </tr>`
-    })
-    listEl.innerHTML = html
-}
-
-function showRockModal(index) {
-    const item = db[index]
-    currentRockEditIndex = index
-
-    if (!item.rockData) {
-        item.rockData = [0,0,0,0,0,0,0,0,0,0]
-    }
-
-    const inputs = document.querySelectorAll('.rock-edit')
-    item.rockData.forEach((v, i) => {
-        if (inputs[i]) inputs[i].value = parseFloat(v || 0).toFixed(2)
+    window.addEventListener('DOMContentLoaded', () => {
+        renderDB()
+        renderTable()
+        calcAvg()
+        initImagePreview()
+        // 初始化默认数据，避免空数据导致渲染异常
+        window.currentRockAvg = Array(10).fill('0.00')
     })
 
-    document.getElementById('rockModalImg').src = item.rock || ''
-    document.getElementById('rockModal').style.display = 'flex'
-    document.getElementById('rockModalImg').classList.remove('zoomed')
-}
-
-function saveRockData() {
-    const inputs = document.querySelectorAll('.rock-edit')
-    const data = Array.from(inputs).map(i => i.value)
-    db[currentRockEditIndex].rockData = data
-    saveToLocal()
-    alert('岩相数据已保存')
-}
-
-function closeRockModal() {
-    document.getElementById('rockModal').style.display = 'none'
-}
-
-function selectRockImage() {
-    document.getElementById('rockImg').click()
-}
-
-function initImagePreview() {
-    document.getElementById('rockImg').addEventListener('change', e => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        if (file.size > 2*1024*1024) { alert('图片≤2MB'); return }
-        const reader = new FileReader()
-        reader.onload = ev => {
-            currentRockBase64 = ev.target.result
-            const prev = document.getElementById('rockPreview')
-            prev.src = currentRockBase64
-            prev.style.display = 'block'
-        }
-        reader.readAsDataURL(file)
-    })
-}
-
-function add() {
-    const name = document.getElementById('name').value.trim()
-    if (!name) { alert('请填名称'); return }
-    const item = {
-        name, ash: document.getElementById('ash').value,
-        sulfur: document.getElementById('sulfur').value,
-        vol: document.getElementById('vol').value,
-        bond: document.getElementById('bond').value,
-        water: document.getElementById('water').value,
-        y: document.getElementById('y').value,
-        heat: document.getElementById('heat').value,
-        cost: document.getElementById('cost').value,
-        rock: currentRockBase64,
-        rockData: [0,0,0,0,0,0,0,0,0,0]
+    // ========== 左侧岩相功能 ==========
+    function showRockModal(index) {
+        const item = db[index]
+        currentRockEditIndex = index
+        if (!item.rockData) item.rockData = Array(10).fill(0)
+        const inputs = document.querySelectorAll('.rock-edit')
+        item.rockData.forEach((v, i) => inputs[i].value = parseFloat(v || 0).toFixed(2))
+        document.getElementById('rockModalImg').src = item.rock || ''
+        document.getElementById('rockModal').style.display = 'flex'
+        calcRockDataSum()
     }
-    db.push(item)
-    saveToLocal()
-    clearForm()
-    alert('添加成功')
-}
 
-function del(index) {
-    if (!confirm('确定删除？')) return
-    db.splice(index,1)
-    saveToLocal()
-}
-
-function edit(index) {
-    editIndex = index
-    const item = db[index]
-    document.getElementById('name').value = item.name||''
-    document.getElementById('ash').value = item.ash||''
-    document.getElementById('sulfur').value = item.sulfur||''
-    document.getElementById('vol').value = item.vol||''
-    document.getElementById('bond').value = item.bond||''
-    document.getElementById('water').value = item.water||''
-    document.getElementById('y').value = item.y||''
-    document.getElementById('heat').value = item.heat||''
-    document.getElementById('cost').value = item.cost||''
-    currentRockBase64 = item.rock||''
-    const prev = document.getElementById('rockPreview')
-    if (currentRockBase64) { prev.src=currentRockBase64; prev.style.display='block' }
-    else { prev.style.display='none' }
-    document.getElementById('updateBtn').style.display='inline-block'
-}
-
-function updateSave() {
-    if (editIndex === -1) return
-    db[editIndex] = {
-        ...db[editIndex],
-        name: document.getElementById('name').value.trim(),
-        ash: document.getElementById('ash').value,
-        sulfur: document.getElementById('sulfur').value,
-        vol: document.getElementById('vol').value,
-        bond: document.getElementById('bond').value,
-        water: document.getElementById('water').value,
-        y: document.getElementById('y').value,
-        heat: document.getElementById('heat').value,
-        cost: document.getElementById('cost').value,
-        rock: currentRockBase64
+    function calcRockDataSum() {
+        const inputs = document.querySelectorAll('.rock-edit')
+        let sum = 0
+        inputs.forEach(input => {
+            sum += parseFloat(input.value) || 0
+        })
+        document.getElementById('rockDataTip').textContent = `粒径含量总和应接近100%（当前：${sum.toFixed(2)}%）`
+        document.getElementById('rockDataTip').style.color = Math.abs(sum - 100) < 1 ? '#1dd1a1' : '#ff6b6b'
     }
-    saveToLocal()
-    clearForm()
-    alert('修改成功')
-}
 
-function clearForm() {
-    document.querySelectorAll('.form input').forEach(i=>i.value='')
-    document.getElementById('rockImg').value=''
-    currentRockBase64=''
-    document.getElementById('rockPreview').style.display='none'
-    document.getElementById('updateBtn').style.display='none'
-    editIndex=-1
-}
-
-function saveToLocal() {
-    localStorage.setItem('coalDB', JSON.stringify(db))
-    renderDB()
-}
-
-function renderTable() {
-    const body = document.getElementById('tableBody')
-    let html = ''
-    for(let i=1; i<=15; i++){
-        html+=`
-        <tr>
-            <td>${i}</td>
-            <td><input class="col-name" data-row="${i}" oninput="autoFill(this)"></td>
-            <td><input class="col-ash" data-row="${i}" readonly></td>
-            <td><input class="col-sulfur" data-row="${i}" readonly></td>
-            <td><input class="col-vol" data-row="${i}" readonly></td>
-            <td><input class="col-bond" data-row="${i}" readonly></td>
-            <td><input class="col-water" data-row="${i}" readonly></td>
-            <td><input class="col-y" data-row="${i}" readonly></td>
-            <td><input class="col-heat" data-row="${i}" readonly></td>
-            <td><input class="col-cost" data-row="${i}" readonly></td>
-            <td><input class="col-rate" data-row="${i}" type="number" placeholder="比例" oninput="calcAvg()"></td>
-            <td><button onclick="delRow(${i})" class="btn-danger">删除</button></td>
-        </tr>`
-    }
-    html+=`
-    <tr class="avg-row">
-        <td>平均值</td><td>—</td>
-        <td id="avg-ash">0.00</td>
-        <td id="avg-sulfur">0.00</td>
-        <td id="avg-vol">0.00</td>
-        <td id="avg-bond">0.00</td>
-        <td id="avg-water">0.00</td>
-        <td id="avg-y">0.00</td>
-        <td id="avg-heat">0.00</td>
-        <td id="avg-cost">0.00</td>
-        <td>—</td>
-        <td><button onclick="showAvgRockModal()" class="btn-purple">岩相</button></td>
-    </tr>`
-    body.innerHTML = html
-}
-
-function addToTable(index) {
-    const data = db[index]
-    for(let i=1; i<=15; i++){
-        const inp = document.querySelector(`.col-name[data-row="${i}"]`)
-        if (!inp.value.trim()) {
-            inp.value = data.name
-            autoFill(inp)
+    function saveRockData() {
+        const inputs = document.querySelectorAll('.rock-edit')
+        const data = Array.from(inputs).map(i => i.value)
+        const sum = data.reduce((acc, val) => acc + parseFloat(val || 0), 0)
+        if (Math.abs(sum - 100) > 5 && !confirm(`粒径含量总和为${sum.toFixed(2)}%，偏离100%超过5%，是否仍保存？`)) {
             return
         }
+        db[currentRockEditIndex].rockData = data
+        saveToLocal()
+        calcAvg()
+        alert('保存成功')
+        closeRockModal()
     }
-    alert('表格已满')
-}
 
-function delRow(row){
-    const sel = `[data-row="${row}"]`
-    document.querySelector(`.col-name${sel}`).value=''
-    document.querySelector(`.col-ash${sel}`).value=''
-    document.querySelector(`.col-sulfur${sel}`).value=''
-    document.querySelector(`.col-vol${sel}`).value=''
-    document.querySelector(`.col-bond${sel}`).value=''
-    document.querySelector(`.col-water${sel}`).value=''
-    document.querySelector(`.col-y${sel}`).value=''
-    document.querySelector(`.col-heat${sel}`).value=''
-    document.querySelector(`.col-cost${sel}`).value=''
-    document.querySelector(`.col-rate${sel}`).value=''
-    calcAvg()
-}
-
-function autoFill(el){
-    const name = el.value.trim()
-    const row = el.dataset.row
-    const tar = db.find(x=>x.name===name)
-    if (!tar) return
-    setCell(row,'ash',tar.ash)
-    setCell(row,'sulfur',tar.sulfur)
-    setCell(row,'vol',tar.vol)
-    setCell(row,'bond',tar.bond)
-    setCell(row,'water',tar.water)
-    setCell(row,'y',tar.y)
-    setCell(row,'heat',tar.heat)
-    setCell(row,'cost',tar.cost)
-    calcAvg()
-}
-
-function setCell(row,typ,val){
-    const el = document.querySelector(`.col-${typ}[data-row="${row}"]`)
-    el.value = parseFloat(val||0).toFixed(2)
-}
-
-function calcAvg() {
-    const cols = ['ash','sulfur','vol','bond','water','y','heat','cost']
-    let totalRate = 0
-    for(let i=1; i<=15; i++){
-        const r = document.querySelector(`.col-rate[data-row="${i}"]`).value
-        totalRate += parseFloat(r)||0
+    function deleteCurrentRockImage() {
+        if (!confirm('确认删除图片？')) return
+        db[currentRockEditIndex].rock = ''
+        document.getElementById('rockModalImg').src = ''
+        saveToLocal()
     }
-    cols.forEach(c=>{
-        let total=0
-        for(let i=1; i<=15; i++){
-            const v = document.querySelector(`.col-${c}[data-row="${i}"]`).value
+
+    function closeRockModal() {
+        document.getElementById('rockModal').style.display = 'none'
+    }
+
+    // ========== 图片上传 ==========
+    function selectRockImage() {
+        document.getElementById('rockImg').click()
+    }
+
+    function initImagePreview() {
+        document.getElementById('rockImg').addEventListener('change', e => {
+            const file = e.target.files[0]
+            if (!file) return
+            if (file.size > 5 * 1024 * 1024) {
+                alert('图片大小不能超过5MB')
+                return
+            }
+            const reader = new FileReader()
+            reader.onload = ev => {
+                currentRockBase64 = ev.target.result
+                document.getElementById('rockPreview').src = currentRockBase64
+                document.getElementById('rockPreview').style.display = 'block'
+            }
+            reader.readAsDataURL(file)
+        })
+    }
+
+    function clearRockImage() {
+        currentRockBase64 = ''
+        document.getElementById('rockPreview').style.display = 'none'
+    }
+
+    // ========== 数据增删改查 ==========
+    function renderDB() {
+        const listEl = document.getElementById('dbList')
+        let html = ''
+        db.forEach((item, i) => {
+            html += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${parseFloat(item.ash||0).toFixed(2)}</td>
+                <td>${parseFloat(item.sulfur||0).toFixed(2)}</td>
+                <td>${parseFloat(item.vol||0).toFixed(2)}</td>
+                <td>${parseFloat(item.bond||0).toFixed(2)}</td>
+                <td>${parseFloat(item.water||0).toFixed(2)}</td>
+                <td>${parseFloat(item.y||0).toFixed(2)}</td>
+                <td>${parseFloat(item.heat||0).toFixed(2)}</td>
+                <td>${parseFloat(item.cost||0).toFixed(2)}</td>
+                <td>
+                    <button class="btn-success" onclick="addToTable(${i})">添加</button>
+                    <button class="btn-purple" onclick="showRockModal(${i})">岩相</button>
+                    <button class="btn-warning" onclick="edit(${i})">修改</button>
+                    <button class="btn-danger" onclick="del(${i})">删</button>
+                </td>
+            </tr>`
+        })
+        listEl.innerHTML = html
+    }
+
+    function add() {
+        const name = document.getElementById('name').value.trim()
+        if (!name) return alert('请填写名称')
+        const numericFields = ['ash', 'sulfur', 'vol', 'bond', 'water', 'y', 'heat', 'cost']
+        for (const field of numericFields) {
+            const val = document.getElementById(field).value
+            if (val === '') continue
+            const num = parseFloat(val)
+            if (isNaN(num)) {
+                return alert(`${getFieldName(field)}必须为数字`)
+            }
+            if (field !== 'cost' && (num < 0 || num > 100)) {
+                return alert(`${getFieldName(field)}必须在0-100之间`)
+            }
+            if (field === 'cost' && num < 0) {
+                return alert(`${getFieldName(field)}不能为负数`)
+            }
+        }
+
+        const item = {
+            name,
+            ash: document.getElementById('ash').value,
+            sulfur: document.getElementById('sulfur').value,
+            vol: document.getElementById('vol').value,
+            bond: document.getElementById('bond').value,
+            water: document.getElementById('water').value,
+            y: document.getElementById('y').value,
+            heat: document.getElementById('heat').value,
+            cost: document.getElementById('cost').value,
+            rock: currentRockBase64,
+            rockData: Array(10).fill(0)
+        }
+        db.push(item)
+        saveToLocal()
+        clearForm()
+        alert('添加成功')
+    }
+
+    function getFieldName(field) {
+        const map = {
+            ash: '灰分',
+            sulfur: '硫',
+            vol: '挥发',
+            bond: '粘结',
+            water: '水分',
+            y: 'Y值',
+            heat: '热强',
+            cost: '成本'
+        }
+        return map[field] || field
+    }
+
+    function del(index) {
+        if (!confirm('确认删除？删除后不可恢复')) return
+        db.splice(index, 1)
+        saveToLocal()
+        calcAvg()
+    }
+
+    function edit(index) {
+        editIndex = index
+        const item = db[index]
+        document.getElementById('name').value = item.name
+        document.getElementById('ash').value = item.ash
+        document.getElementById('sulfur').value = item.sulfur
+        document.getElementById('vol').value = item.vol
+        document.getElementById('bond').value = item.bond
+        document.getElementById('water').value = item.water
+        document.getElementById('y').value = item.y
+        document.getElementById('heat').value = item.heat
+        document.getElementById('cost').value = item.cost
+        currentRockBase64 = item.rock || ''
+        document.getElementById('rockPreview').src = currentRockBase64
+        document.getElementById('rockPreview').style.display = currentRockBase64 ? 'block' : 'none'
+        document.getElementById('updateBtn').style.display = 'inline-block'
+    }
+
+    function updateSave() {
+        if (editIndex === -1) return
+        const name = document.getElementById('name').value.trim()
+        if (!name) return alert('请填写名称')
+        
+        const numericFields = ['ash', 'sulfur', 'vol', 'bond', 'water', 'y', 'heat', 'cost']
+        for (const field of numericFields) {
+            const val = document.getElementById(field).value
+            if (val === '') continue
+            const num = parseFloat(val)
+            if (isNaN(num)) {
+                return alert(`${getFieldName(field)}必须为数字`)
+            }
+            if (field !== 'cost' && (num < 0 || num > 100)) {
+                return alert(`${getFieldName(field)}必须在0-100之间`)
+            }
+            if (field === 'cost' && num < 0) {
+                return alert(`${getFieldName(field)}不能为负数`)
+            }
+        }
+
+        db[editIndex] = {
+            ...db[editIndex],
+            name,
+            ash: document.getElementById('ash').value,
+            sulfur: document.getElementById('sulfur').value,
+            vol: document.getElementById('vol').value,
+            bond: document.getElementById('bond').value,
+            water: document.getElementById('water').value,
+            y: document.getElementById('y').value,
+            heat: document.getElementById('heat').value,
+            cost: document.getElementById('cost').value,
+            rock: currentRockBase64
+        }
+        saveToLocal()
+        clearForm()
+        calcAvg()
+        alert('修改成功')
+    }
+
+    function clearForm() {
+        document.querySelectorAll('.form input').forEach(i => i.value = '')
+        currentRockBase64 = ''
+        document.getElementById('rockPreview').style.display = 'none'
+        document.getElementById('updateBtn').style.display = 'none'
+        editIndex = -1
+    }
+
+    function saveToLocal() {
+        localStorage.setItem('coalDB', JSON.stringify(db))
+        renderDB()
+    }
+
+    // ========== 右侧表格 ==========
+    function renderTable() {
+        const body = document.getElementById('tableBody')
+        let html = ''
+        for (let i = 1; i <= 15; i++) {
+            html += `
+            <tr>
+                <td>${i}</td>
+                <td><input class="col-name" data-row="${i}" oninput="autoFill(this)"></td>
+                <td><input class="col-ash" data-row="${i}" readonly></td>
+                <td><input class="col-sulfur" data-row="${i}" readonly></td>
+                <td><input class="col-vol" data-row="${i}" readonly></td>
+                <td><input class="col-bond" data-row="${i}" readonly></td>
+                <td><input class="col-water" data-row="${i}" readonly></td>
+                <td><input class="col-y" data-row="${i}" readonly></td>
+                <td><input class="col-heat" data-row="${i}" readonly></td>
+                <td><input class="col-cost" data-row="${i}" readonly></td>
+                <td><input class="col-rate" data-row="${i}" type="number" placeholder="比例" min="0" max="100" oninput="calcAvg()"></td>
+                <td><button onclick="delRow(${i})" class="btn-danger">删除</button></td>
+            </tr>`
+        }
+        html += `
+        <tr class="avg-row">
+            <td>平均值</td><td>—</td>
+            <td id="avg-ash">0.00</td><td id="avg-sulfur">0.00</td><td id="avg-vol">0.00</td>
+            <td id="avg-bond">0.00</td><td id="avg-water">0.00</td><td id="avg-y">0.00</td>
+            <td id="avg-heat">0.00</td><td id="avg-cost">0.00</td><td>—</td>
+            <td><button onclick="showAvgRockModal()" class="btn-purple">岩相</button></td>
+        </tr>`
+        body.innerHTML = html
+    }
+
+    function addToTable(index) {
+        const data = db[index]
+        for (let i = 1; i <= 15; i++) {
+            const inp = document.querySelector(`.col-name[data-row="${i}"]`)
+            if (!inp.value.trim()) {
+                inp.value = data.name
+                autoFill(inp)
+                return
+            }
+        }
+        alert('表格已满，无法添加更多数据')
+    }
+
+    function delRow(row) {
+        const sel = `[data-row="${row}"]`
+        document.querySelector(`.col-name${sel}`).value = ''
+        document.querySelector(`.col-ash${sel}`).value = ''
+        document.querySelector(`.col-sulfur${sel}`).value = ''
+        document.querySelector(`.col-vol${sel}`).value = ''
+        document.querySelector(`.col-bond${sel}`).value = ''
+        document.querySelector(`.col-water${sel}`).value = ''
+        document.querySelector(`.col-y${sel}`).value = ''
+        document.querySelector(`.col-heat${sel}`).value = ''
+        document.querySelector(`.col-cost${sel}`).value = ''
+        document.querySelector(`.col-rate${sel}`).value = ''
+        calcAvg()
+    }
+
+    function autoFill(el) {
+        const name = el.value.trim()
+        const row = el.dataset.row
+        const tar = db.find(x => x.name === name)
+        if (!tar) {
+            const fields = ['ash', 'sulfur', 'vol', 'bond', 'water', 'y', 'heat', 'cost']
+            fields.forEach(field => {
+                document.querySelector(`.col-${field}[data-row="${row}"]`).value = ''
+            })
+            return
+        }
+        setCell(row, 'ash', tar.ash)
+        setCell(row, 'sulfur', tar.sulfur)
+        setCell(row, 'vol', tar.vol)
+        setCell(row, 'bond', tar.bond)
+        setCell(row, 'water', tar.water)
+        setCell(row, 'y', tar.y)
+        setCell(row, 'heat', tar.heat)
+        setCell(row, 'cost', tar.cost)
+        calcAvg()
+    }
+
+    function setCell(row, typ, val) {
+        document.querySelector(`.col-${typ}[data-row="${row}"]`).value = parseFloat(val || 0).toFixed(2)
+    }
+
+    // ========== 加权平均计算 ==========
+    function calcAvg() {
+        const cols = ['ash', 'sulfur', 'vol', 'bond', 'water', 'y', 'heat', 'cost']
+        let totalRate = 0
+        for (let i = 1; i <= 15; i++) {
             const r = document.querySelector(`.col-rate[data-row="${i}"]`).value
-            total += (parseFloat(v)||0)*(parseFloat(r)||0)
+            totalRate += parseFloat(r) || 0
         }
-        const avg = totalRate>0 ? (total/totalRate).toFixed(2) : '0.00'
-        document.getElementById(`avg-${c}`).textContent = avg
-    })
-}
+        document.getElementById('rateSumTip').textContent = `比例总和：${totalRate.toFixed(2)}%（建议为100%）`
+        document.getElementById('rateSumTip').style.color = Math.abs(totalRate - 100) < 1 ? '#1dd1a1' : '#ff6b6b'
 
-function showAvgRockModal() {
-    let totalRate = 0
-    const rates = []
-    for(let i=1;i<=15;i++){
-        const r = parseFloat(document.querySelector(`.col-rate[data-row="${i}"]`).value)||0
-        rates.push(r)
-        totalRate += r
-    }
-    if(totalRate===0){alert('请先设置比例');return}
-
-    const sum = Array(10).fill(0)
-    for(let i=1;i<=15;i++){
-        const name = document.querySelector(`.col-name[data-row="${i}"]`).value.trim()
-        const item = db.find(x=>x.name===name)
-        if(!item || !item.rockData) continue
-        const rd = item.rockData
-        const rt = rates[i-1]
-        for(let c=0;c<10;c++){
-            sum[c] += (parseFloat(rd[c])||0)*rt
-        }
+        cols.forEach(c => {
+            let total = 0
+            for (let i = 1; i <= 15; i++) {
+                const v = document.querySelector(`.col-${c}[data-row="${i}"]`).value
+                const r = document.querySelector(`.col-rate[data-row="${i}"]`).value
+                total += (parseFloat(v) || 0) * (parseFloat(r) || 0)
+            }
+            document.getElementById(`avg-${c}`).textContent = totalRate > 0 ? (total / totalRate).toFixed(2) : '0.00'
+        })
+        calcRockWeightAvg()
     }
 
-    const avg = sum.map(v => (v/totalRate).toFixed(2))
-    const tds = document.querySelectorAll('#avgRockTable tbody td')
-    avg.forEach((v, i) => {
-        if (tds[i]) tds[i].textContent = v
-    })
+    function calcRockWeightAvg() {
+        let totalRate = 0
+        const rates = []
+        for (let i = 1; i <= 15; i++) {
+            const r = parseFloat(document.querySelector(`.col-rate[data-row="${i}"]`).value) || 0
+            rates.push(r)
+            totalRate += r
+        }
+        const sum = Array(10).fill(0)
+        if (totalRate > 0) {
+            for (let i = 1; i <= 15; i++) {
+                const name = document.querySelector(`.col-name[data-row="${i}"]`).value.trim()
+                const item = db.find(x => x.name === name)
+                if (!item || !item.rockData) continue
+                const rd = item.rockData
+                const rt = rates[i - 1]
+                for (let c = 0; c < 10; c++) sum[c] += (parseFloat(rd[c]) || 0) * rt
+            }
+        }
+        window.currentRockAvg = sum.map(v => (totalRate > 0 ? (v / totalRate).toFixed(2) : '0.00'))
+    }
 
-    document.getElementById('avgRockModal').style.display = 'flex'
-}
+    // 打开岩相弹窗（移除图表更新逻辑）
+    function showAvgRockModal() {
+        const data = window.currentRockAvg || Array(10).fill('0.00')
+        const sum = data.reduce((acc, val) => acc + parseFloat(val || 0), 0)
+        document.getElementById('avgRockSum').textContent = sum.toFixed(2)
+        document.getElementById('avgRockSum').style.color = Math.abs(sum - 100) < 1 ? '#1dd1a1' : '#ff6b6b'
 
-function closeAvgRockModal(){
-    document.getElementById('avgRockModal').style.display = 'none'
-}
+        for (let i = 0; i < 10; i++) {
+            document.getElementById(`c${i + 1}`).textContent = data[i]
+        }
+        document.getElementById('avgRockModal').style.display = 'flex'
+    }
 
-function clearTable() {
-    if (!confirm('确定清空？')) return
-    document.querySelectorAll('#tableBody input').forEach(i=>i.value='')
-    calcAvg()
-}
+    function closeAvgRockModal() {
+        document.getElementById('avgRockModal').style.display = 'none'
+    }
 
-// ========== 备忘录弹窗功能 ==========
-function openMemoModal(){
-    document.getElementById('memoModal').style.display = 'flex'
-    renderMemo()
-}
-function closeMemoModal(){
-    document.getElementById('memoModal').style.display = 'none'
-}
-function renderMemo(){
-    const el = document.getElementById('memoList')
-    let html = ''
-    memoList.forEach((t,i)=>{
-        html+=`<div class="memo-item" onclick="selectMemo(${i})">${t}</div>`
-    })
-    el.innerHTML = html
-}
-function selectMemo(i){
-    currentMemoIndex = i
-    document.getElementById('memoInput').value = memoList[i]
-}
-function addMemo(){
-    const t = document.getElementById('memoInput').value.trim()
-    if(!t)return alert('请输入内容')
-    memoList.push(t)
-    saveMemo()
-    document.getElementById('memoInput').value=''
-}
-function editMemo(){
-    if(currentMemoIndex===-1)return alert('请选择一条')
-    const t = document.getElementById('memoInput').value.trim()
-    if(!t)return
-    memoList[currentMemoIndex] = t
-    saveMemo()
-}
-function delMemo(){
-    if(currentMemoIndex===-1)return alert('请选择')
-    memoList.splice(currentMemoIndex,1)
-    saveMemo()
-    document.getElementById('memoInput').value=''
-    currentMemoIndex=-1
-}
-function saveMemo(){
-    localStorage.setItem('memos',JSON.stringify(memoList))
-    renderMemo()
-}
+    function clearTable() {
+        if (!confirm('确认清空右侧表格？清空后不可恢复')) return
+        document.querySelectorAll('#tableBody input').forEach(i => i.value = '')
+        calcAvg()
+    }
+
+    // ========== 导入导出功能 ==========
+    function exportData() {
+        if (db.length === 0) {
+            alert('数据库为空，无需导出')
+            return
+        }
+        const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' })
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = `煤质数据库_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`
+        a.click()
+        URL.revokeObjectURL(a.href)
+    }
+
+    function importData(event) {
+        const file = event.target.files[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result)
+                if (!Array.isArray(importedData)) {
+                    throw new Error('导入数据格式错误，必须为数组')
+                }
+                if (!confirm(`将导入${importedData.length}条数据，原有数据将被覆盖，是否继续？`)) {
+                    return
+                }
+                db.length = 0
+                db.push(...importedData)
+                saveToLocal()
+                calcAvg()
+                alert('导入成功')
+            } catch (err) {
+                alert(`导入失败：${err.message}`)
+            }
+        }
+        reader.readAsText(file)
+        document.getElementById('fileImport').value = ''
+    }
 </script>
 </body>
 </html>
