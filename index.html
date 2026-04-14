@@ -1,305 +1,183 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>煤质数据库系统（兼容Excel格式）</title>
-<style>
-    * {
-        box-sizing: border-box;
-        font-family: "Microsoft YaHei", sans-serif;
-        margin: 0;
-        padding: 0;
-    }
-    html, body {
-        height: 100%;
-        background: #f5f6fa;
-        padding: 10px;
-    }
-    .main {
-        width: 100%;
-        height: 100%;
-        min-height: calc(100vh - 20px);
-    }
-    .left {
-        width: 100%;
-        background: #fff;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        overflow-y: auto;
-        height: 100%;
-    }
-    .left h3 {
-        font-size: 18px;
-        margin-bottom: 15px;
-    }
-    .form {
-        display: grid;
-        grid-template-columns: repeat(3, 150px);
-        gap: 8px;
-        margin-bottom: 15px;
-    }
-    .form input {
-        height: 32px;
-        padding: 4px 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        outline: none;
-        font-size: 15px;
-    }
-    .form input:focus {
-        border-color: #4096ff;
-    }
-    button {
-        min-width: 70px;
-        height: 32px;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin-right: 4px;
-        font-size: 14px;
-        margin-bottom: 6px;
-        flex-shrink: 0;
-        padding: 0 10px;
-    }
-    button:hover {
-        opacity: 0.92;
-    }
-    .db-table button {
-        width: 50px;
-        height: 26px;
-        font-size: 13px;
-        margin: 1px;
-    }
-    .btn-primary { background: #4096ff; }
-    .btn-warning { background: #ff9f43; }
-    .btn-success { background: #1dd1a1; }
-    .btn-danger  { background: #ff6b6b; }
-    .btn-purple  { background: #70a1ff; }
-    .btn-gray    { background: #909399; }
+    <meta charset="UTF-8">
+    <title>煤质数据库系统</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            height: 100%;
+            background: #f5f6fa;
+            padding: 10px;
+        }
+        .main {
+            width: 100%;
+            height: 100%;
+        }
+        .left {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            height: 100%;
+            overflow-y: auto;
+        }
+        .left h3 {
+            margin: 15px 0;
+        }
+        .form {
+            display: grid;
+            grid-template-columns: repeat(3, 150px);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .form input {
+            height: 32px;
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            outline: none;
+        }
+        .form input:focus {
+            border-color: #4096ff;
+        }
+        button {
+            min-width: 70px;
+            height: 32px;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px 4px 5px 0;
+            padding: 0 10px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .btn-primary { background: #4096ff; }
+        .btn-warning { background: #ff9f43; }
+        .btn-success { background: #1dd1a1; }
+        .btn-danger  { background: #ff6b6b; }
+        .btn-purple  { background: #70a1ff; }
 
-    .btn-row {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-    }
+        .rock-box {
+            margin: 12px 0;
+            padding: 12px;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+        }
+        .rock-preview {
+            max-width: 130px;
+            max-height: 90px;
+            margin-top: 8px;
+            border-radius: 4px;
+            display: none;
+        }
+        #rockImg, #excelImport { display: none; }
 
-    .rock-box {
-        margin: 12px 0;
-        padding: 12px;
-        border: 1px dashed #ccc;
-        border-radius: 4px;
-    }
-    .rock-preview {
-        max-width: 130px;
-        max-height: 90px;
-        margin-top: 8px;
-        border-radius: 4px;
-        display: none;
-        object-fit: cover;
-    }
-    #rockImg { display: none; }
+        /* 表格样式 */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 12px 0;
+        }
+        .db-table-container {
+            max-height: 280px;
+            overflow-y: auto;
+            border: 1px solid #e5e6eb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #e5e6eb;
+            padding: 8px 10px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        th {
+            background: #f0f5ff;
+            position: sticky;
+            top: 0;
+        }
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
 
-    .table-container {
-        width: 100%;
-        overflow-x: auto;
-        margin-top: 12px;
-        margin-bottom: 20px;
-    }
-    
-    .db-table-container {
-        width: 100%;
-        overflow-x: auto;
-        margin-top: 12px;
-        margin-bottom: 20px;
-        max-height: 280px;
-        overflow-y: auto;
-        border: 1px solid #e5e6eb;
-        border-radius: 4px;
-    }
-    
-    .db-table, .weight-select-table, .weight-result-table {
-        width: 100%;
-        min-width: 800px;
-        border-collapse: collapse;
-        font-size: 14px;
-        table-layout: auto;
-    }
-    
-    .db-table {
-        border: none;
-    }
-    .db-table thead {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-    .db-table th, .db-table td {
-        border: 1px solid #e5e6eb;
-        padding: 8px 10px;
-        text-align: center;
-        white-space: nowrap;
-    }
-    .db-table th {
-        background: #f0f5ff;
-        font-weight: 500;
-    }
-    .db-table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
+        /* 加权表格 */
+        .weight-select-table th { background: #4096ff; color: #fff; }
+        .weight-result-table { background: #fff7e6; }
+        .weight-result-table th { background: #ff9f43; color: #fff; }
 
-    .weight-select-table {
-        margin-top: 20px;
-        margin-bottom: 15px;
-    }
-    .weight-select-table th, .weight-select-table td {
-        border: 1px solid #e5e6eb;
-        padding: 8px 10px;
-        text-align: center;
-        white-space: nowrap;
-    }
-    .weight-select-table th {
-        background: #4096ff;
-        color: #fff;
-        font-weight: 500;
-    }
-    .weight-select-table select, .weight-select-table input {
-        width: 100%;
-        height: 30px;
-        padding: 0 8px;
-        border: 1px solid #dcdfe6;
-        border-radius: 4px;
-        outline: none;
-        font-size: 14px;
-        text-align: center;
-    }
-    .weight-select-table select:focus, .weight-select-table input:focus {
-        border-color: #4096ff;
-    }
+        /* 弹窗 */
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .rock-tip {
+            color: #ff6b6b;
+            text-align: center;
+            margin: 8px 0;
+        }
 
-    .weight-result-table {
-        margin-top: 15px;
-        background: #fff7e6;
-    }
-    .weight-result-table th, .weight-result-table td {
-        border: 1px solid #e5e6eb;
-        padding: 10px;
-        text-align: center;
-        white-space: nowrap;
-    }
-    .weight-result-table th {
-        background: #ff9f43;
-        color: #fff;
-        font-weight: 500;
-    }
-    .weight-result-table td {
-        font-weight: bold;
-        color: #d46100;
-    }
-    .rock-btn {
-        width: 80px !important;
-        height: 28px !important;
-        font-size: 13px !important;
-        margin: 0 auto !important;
-        display: block !important;
-    }
-
-    .weight-ctrl {
-        margin: 15px 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .modal {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.65);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        display: none;
-        padding: 20px;
-    }
-    .modal-content {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        max-width: 95%;
-        max-height: 90vh;
-        overflow-y: auto;
-        width: 1000px;
-    }
-    #rockModalImg {
-        max-width: 100%;
-        max-height: 300px;
-        border-radius: 6px;
-        display: block;
-        margin: 0 auto;
-    }
-    .rock-table {
-        width: 100% !important;
-        table-layout: fixed;
-        border-collapse: collapse;
-        font-size: 15px;
-        margin: 10px 0;
-    }
-    .rock-table th, .rock-table td {
-        border: 1px solid #ddd;
-        padding: 8px 4px;
-        text-align: center;
-        white-space: nowrap;
-    }
-    .rock-table th { background: #f0f5ff; }
-    .rock-table input {
-        width: 100%;
-        height: 28px;
-        border: 1px solid #ddd;
-        text-align: center;
-        font-size: 14px;
-    }
-    .fixed-row {
-        background: #f7f8fa !important;
-        font-weight: 500;
-    }
-    .rock-tip {
-        color: #ff6b6b;
-        font-size: 13px;
-        margin: 5px 0;
-        text-align: center;
-    }
-    #excelImport {
-        display: none;
-    }
-</style>
+        /* 备忘录 */
+        .memo-modal-content { width: 800px; }
+        .memo-form {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .memo-title-input { flex: 1; min-width: 150px; height: 36px; }
+        .memo-content-input { flex: 3; min-width: 250px; height: 36px; }
+        .memo-content { max-width: 300px; white-space: normal; text-align: left; }
+        .memo-edit-text { height: 120px; resize: vertical; }
+    </style>
 </head>
 <body>
-
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+<!-- 岩相弹窗 -->
 <div class="modal" id="rockModal">
     <div class="modal-content">
-        <img id="rockModalImg">
-        <div style="margin:10px 0; text-align:center">
+        <img id="rockModalImg" style="max-height:300px; display:block; margin:0 auto;">
+        <div style="text-align:center; margin:10px 0;">
             <button class="btn-primary" onclick="saveRockData()">保存岩相数据</button>
             <button class="btn-danger" onclick="deleteCurrentRockImage()">删除图片</button>
             <button class="btn-primary" onclick="closeRockModal()">关闭</button>
         </div>
-        <div class="rock-tip" id="rockDataTip">粒径含量总和应接近100%（当前：0.00%）</div>
-        <table class="rock-table">
-            <tr class="fixed-row">
-                <td>粒径区间</td>
+        <div class="rock-tip" id="rockDataTip">粒径总和：0.00%</div>
+        <table>
+            <tr>
+                <td>粒径</td>
                 <td>＜0.47</td><td>0.47-0.58</td><td>0.58-0.75</td><td>0.75-0.90</td>
                 <td>0.90-1.13</td><td>1.13-1.53</td><td>1.53-1.70</td><td>1.70-1.90</td>
                 <td>1.90-2.35</td><td>＞2.35</td>
             </tr>
             <tr>
-                <td>含量（%）</td>
+                <td>含量</td>
                 <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
                 <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
                 <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
@@ -315,26 +193,64 @@
     </div>
 </div>
 
+<!-- 岩相加权弹窗 -->
 <div class="modal" id="avgRockModal">
     <div class="modal-content">
-        <h3 style="text-align:center; margin-bottom:10px">岩相加权平均</h3>
-        <div class="rock-tip">加权粒径含量总和：<span id="avgRockSum">0.00</span>%</div>
-        <table class="rock-table">
-            <tr class="fixed-row">
-                <td>粒径区间</td>
+        <h3 style="text-align:center">岩相加权平均</h3>
+        <div class="rock-tip">总和：<span id="avgRockSum">0.00</span>%</div>
+        <table>
+            <tr>
+                <td>粒径</td>
                 <td>＜0.47</td><td>0.47-0.58</td><td>0.58-0.75</td><td>0.75-0.90</td>
                 <td>0.90-1.13</td><td>1.13-1.53</td><td>1.53-1.70</td><td>1.70-1.90</td>
                 <td>1.90-2.35</td><td>＞2.35</td>
             </tr>
             <tr>
-                <td>加权含量（%）</td>
-                <td id="c1">0.00</td><td id="c2">0.00</td><td id="c3">0.00</td><td id="c4">0.00</td>
-                <td id="c5">0.00</td><td id="c6">0.00</td><td id="c7">0.00</td><td id="c8">0.00</td>
-                <td id="c9">0.00</td><td id="c10">0.00</td>
+                <td>加权值</td>
+                <td id="c1">0</td><td id="c2">0</td><td id="c3">0</td><td id="c4">0</td>
+                <td id="c5">0</td><td id="c6">0</td><td id="c7">0</td><td id="c8">0</td>
+                <td id="c9">0</td><td id="c10">0</td>
             </tr>
         </table>
-        <div style="text-align:center; margin-top:15px">
+        <div style="text-align:center; margin-top:15px;">
             <button class="btn-primary" onclick="closeAvgRockModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 备忘录 -->
+<div class="modal" id="memoModal">
+    <div class="modal-content memo-modal-content">
+        <h3 style="text-align:center">备忘录</h3>
+        <div class="memo-form">
+            <input type="text" id="memoTitle" placeholder="标题" class="memo-title-input">
+            <input type="text" id="memoContent" placeholder="内容" class="memo-content-input">
+            <button class="btn-primary" onclick="addMemo()">添加</button>
+            <button class="btn-danger" onclick="clearAllMemos()">清空所有</button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr><th>序号</th><th>标题</th><th>内容</th><th>时间</th><th>操作</th></tr>
+                </thead>
+                <tbody id="memoList"></tbody>
+            </table>
+        </div>
+        <div style="text-align:center;">
+            <button class="btn-primary" onclick="closeMemoModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- 备忘录编辑 -->
+<div class="modal" id="memoEditModal">
+    <div class="modal-content" style="width:500px;">
+        <h3 style="text-align:center">编辑备忘录</h3>
+        <input type="text" id="memoEditTitle" class="memo-title-input" placeholder="标题">
+        <textarea id="memoEditContent" class="memo-content-input memo-edit-text" placeholder="内容"></textarea>
+        <div style="text-align:center; margin-top:10px;">
+            <button class="btn-primary" onclick="saveMemoEdit()">保存</button>
+            <button class="btn-danger" onclick="closeMemoEditModal()">取消</button>
         </div>
     </div>
 </div>
@@ -344,514 +260,437 @@
         <h3>煤质数据库</h3>
         <div class="form">
             <input id="name" placeholder="名称" required>
-            <input id="ash" placeholder="灰分" type="number" step="0.01" min="0" max="100">
-            <input id="sulfur" placeholder="硫" type="number" step="0.01" min="0" max="100">
-            <input id="vol" placeholder="挥发" type="number" step="0.01" min="0" max="100">
-            <input id="bond" placeholder="粘结" type="number" step="0.01" min="0" max="100">
-            <input id="water" placeholder="水分" type="number" step="0.01" min="0" max="100">
-            <input id="y" placeholder="Y值" type="number" step="0.01" min="0" max="100">
-            <input id="heat" placeholder="热强" type="number" step="0.01" min="0" max="100">
-            <input id="cost" placeholder="成本" type="number" step="0.01" min="0">
+            <input id="ash" placeholder="灰分" type="number" step="0.01">
+            <input id="sulfur" placeholder="硫" type="number" step="0.01">
+            <input id="vol" placeholder="挥发" type="number" step="0.01">
+            <input id="bond" placeholder="粘结" type="number" step="0.01">
+            <input id="water" placeholder="水分" type="number" step="0.01">
+            <input id="y" placeholder="Y值" type="number" step="0.01">
+            <input id="heat" placeholder="热强" type="number" step="0.01">
+            <input id="cost" placeholder="成本" type="number" step="0.01">
         </div>
+
         <div class="rock-box">
-            <button class="btn-purple" onclick="selectRockImage()">岩相图片</button>
+            <button class="btn-purple" onclick="selectRockImage()">选择图片</button>
             <button class="btn-danger" onclick="clearRockImage()">清空图片</button>
             <img id="rockPreview" class="rock-preview">
             <input type="file" id="rockImg" accept="image/*">
         </div>
-        
-        <div class="btn-row">
-            <button onclick="add()" class="btn-primary">添加数据</button>
-            <button onclick="exportExcel()" class="btn-success">导出Excel</button>
-            <button onclick="document.getElementById('excelImport').click()" class="btn-warning">导入Excel</button>
-            <button onclick="updateSave()" id="updateBtn" style="display:none;" class="btn-warning">保存修改</button>
+
+        <div>
+            <button class="btn-primary" onclick="addData()">添加数据</button>
+            <button class="btn-success" onclick="exportExcel()">导出Excel</button>
+            <button class="btn-warning" onclick="document.getElementById('excelImport').click()">导入Excel</button>
+            <button class="btn-warning" id="updateBtn" style="display:none;" onclick="updateSave()">保存修改</button>
+            <button class="btn-purple" onclick="openMemoModal()">备忘录</button>
         </div>
-        
-        <input type="file" id="excelImport" accept=".xls,.xlsx" onchange="importExcel(event)">
-        
+        <input type="file" id="excelImport" accept=".xlsx,.xls" onchange="importExcel(event)">
+
         <div class="db-table-container">
-            <table class="db-table">
+            <table>
                 <thead>
-                    <tr>
-                        <th>名称</th><th>灰分</th><th>硫</th><th>挥发</th><th>粘结</th>
-                        <th>水分</th><th>Y值</th><th>热强</th><th>成本</th><th>操作</th>
-                    </tr>
+                    <tr><th>名称</th><th>灰分</th><th>硫</th><th>挥发</th><th>粘结</th><th>水分</th><th>Y值</th><th>热强</th><th>成本</th><th>操作</th></tr>
                 </thead>
                 <tbody id="dbList"></tbody>
             </table>
         </div>
 
-        <h3 style="margin-top: 30px;">煤质加权平均计算</h3>
-        <div class="weight-ctrl">
-            <button onclick="clearWeightTable()" class="btn-danger">清空计算表</button>
-        </div>
+        <h3>加权计算</h3>
+        <button class="btn-danger" onclick="clearWeightTable()">清空计算表</button>
         <div class="table-container">
             <table class="weight-select-table">
                 <thead>
-                    <tr>
-                        <th>项目</th>
-                        <th>列1</th><th>列2</th><th>列3</th><th>列4</th><th>列5</th>
-                        <th>列6</th><th>列7</th><th>列8</th><th>列9</th><th>列10</th>
-                    </tr>
+                    <tr><th>项目</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td>煤种名称</td>
-                        <td><select class="coal-select" data-col="1" onchange="updateCoalData(1)"></select></td>
-                        <td><select class="coal-select" data-col="2" onchange="updateCoalData(2)"></select></td>
-                        <td><select class="coal-select" data-col="3" onchange="updateCoalData(3)"></select></td>
-                        <td><select class="coal-select" data-col="4" onchange="updateCoalData(4)"></select></td>
-                        <td><select class="coal-select" data-col="5" onchange="updateCoalData(5)"></select></td>
-                        <td><select class="coal-select" data-col="6" onchange="updateCoalData(6)"></select></td>
-                        <td><select class="coal-select" data-col="7" onchange="updateCoalData(7)"></select></td>
-                        <td><select class="coal-select" data-col="8" onchange="updateCoalData(8)"></select></td>
-                        <td><select class="coal-select" data-col="9" onchange="updateCoalData(9)"></select></td>
-                        <td><select class="coal-select" data-col="10" onchange="updateCoalData(10)"></select></td>
+                        <td>煤种</td>
+                        <td><select onchange="updateCoalData(1)"></select></td>
+                        <td><select onchange="updateCoalData(2)"></select></td>
+                        <td><select onchange="updateCoalData(3)"></select></td>
+                        <td><select onchange="updateCoalData(4)"></select></td>
+                        <td><select onchange="updateCoalData(5)"></select></td>
+                        <td><select onchange="updateCoalData(6)"></select></td>
+                        <td><select onchange="updateCoalData(7)"></select></td>
+                        <td><select onchange="updateCoalData(8)"></select></td>
+                        <td><select onchange="updateCoalData(9)"></select></td>
+                        <td><select onchange="updateCoalData(10)"></select></td>
                     </tr>
                     <tr>
-                        <td>比例(%)</td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="1" oninput="calcWeightAvg()"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="2" oninput="calcWeightAvg()"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="3" oninput="calcWeightAvg()"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="4" oninput="calcWeightAvg()"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="5" oninput="calcWeightAvg()"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="6" oninput="calcWeightAvg()"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="7" oninput="calcWeightAvg()"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="8" oninput="calcWeightAvg()"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="9" oninput="calcWeightAvg()"></td>
-                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="10" oninput="calcWeightAvg()"></td>
+                        <td>比例%</td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" oninput="calcWeightAvg()"></td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <h3 style="margin-top: 20px;">加权计算结果</h3>
+        <h3>计算结果</h3>
         <div class="table-container">
             <table class="weight-result-table">
-                <thead>
-                    <tr>
-                        <th>灰分加权</th>
-                        <th>硫分加权</th>
-                        <th>挥发分加权</th>
-                        <th>粘结指数加权</th>
-                        <th>水分加权</th>
-                        <th>Y值加权</th>
-                        <th>热强加权</th>
-                        <th>成本加权</th>
-                        <th>岩相查看</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td id="result-ash">0.00</td>
-                        <td id="result-sulfur">0.00</td>
-                        <td id="result-vol">0.00</td>
-                        <td id="result-bond">0.00</td>
-                        <td id="result-water">0.00</td>
-                        <td id="result-y">0.00</td>
-                        <td id="result-heat">0.00</td>
-                        <td id="result-cost">0.00</td>
-                        <td>
-                            <button class="btn-purple rock-btn" onclick="showAvgRockModal()">岩相</button>
-                        </td>
-                    </tr>
-                </tbody>
+                <tr>
+                    <th>灰分</th><th>硫</th><th>挥发</th><th>粘结</th><th>水分</th><th>Y值</th><th>热强</th><th>成本</th><th>岩相</th>
+                </tr>
+                <tr>
+                    <td id="resAsh">0.00</td><td id="resSulfur">0.00</td><td id="resVol">0.00</td>
+                    <td id="resBond">0.00</td><td id="resWater">0.00</td><td id="resY">0.00</td>
+                    <td id="resHeat">0.00</td><td id="resCost">0.00</td>
+                    <td><button class="btn-purple" onclick="showAvgRockModal()">查看</button></td>
+                </tr>
             </table>
         </div>
     </div>
 </div>
 
 <script>
-    const db = JSON.parse(localStorage.getItem('coalDB')) || []
-    let editIndex = -1
-    let currentRockBase64 = ''
-    let currentRockEditIndex = -1
-    const coalColumnData = {}
+    // 全局数据
+    const db = JSON.parse(localStorage.getItem('coalDB')) || [];
+    const memoDB = JSON.parse(localStorage.getItem('memoDB')) || [];
+    const coalData = Array(11).fill().map(() => ({
+        name: '', ash: 0, sulfur: 0, vol: 0, bond: 0, water: 0, y: 0, heat: 0, cost: 0, rockData: Array(10).fill(0)
+    }));
+    
+    let editIndex = -1;
+    let currentRockImg = '';
+    let rockEditIndex = -1;
+    let rockAvg = Array(10).fill(0);
+    let memoEditIdx = -1;
 
-    // 岩相表头映射（兼容中英文符号）
-    const rockHeaderMap = {
-        '＜0.47': ['＜0.47', '<0.47', '小于0.47'],
-        '0.47-0.58': ['0.47-0.58', '0.47~0.58'],
-        '0.58-0.75': ['0.58-0.75', '0.58~0.75'],
-        '0.75-0.90': ['0.75-0.90', '0.75~0.90'],
-        '0.90-1.13': ['0.90-1.13', '0.90~1.13'],
-        '1.13-1.53': ['1.13-1.53', '1.13~1.53'],
-        '1.53-1.70': ['1.53-1.70', '1.53~1.70'],
-        '1.70-1.90': ['1.70-1.90', '1.70~1.90'],
-        '1.90-2.35': ['1.90-2.35', '1.90~2.35'],
-        '＞2.35': ['＞2.35', '>2.35', '大于2.35']
-    }
-    // 核心必填表头
-    const requiredBaseHeaders = ['名称', '灰分', '硫', '挥发', '粘结', '水分', 'Y值', '热强', '成本']
-
-    window.addEventListener('DOMContentLoaded', () => {
-        renderDB()
-        initCoalSelects()
-        initImagePreview()
-        window.currentRockAvg = Array(10).fill('0.00')
-        for (let i = 1; i <= 10; i++) {
-            coalColumnData[i] = {
-                name: '', ash:0, sulfur:0, vol:0, bond:0, water:0, y:0, heat:0, cost:0, rockData: Array(10).fill(0)
-            }
+    // DOM元素
+    const $ = (id) => document.getElementById(id);
+    const els = {
+        dbList: $('dbList'), name: $('name'), ash: $('ash'), sulfur: $('sulfur'), vol: $('vol'),
+        bond: $('bond'), water: $('water'), y: $('y'), heat: $('heat'), cost: $('cost'),
+        updateBtn: $('updateBtn'), rockPreview: $('rockPreview'),
+        rockModal: $('rockModal'), rockModalImg: $('rockModalImg'), rockTip: $('rockDataTip'),
+        rockInputs: document.querySelectorAll('.rock-edit'),
+        avgModal: $('avgRockModal'), avgSum: $('avgRockSum'),
+        memoModal: $('memoModal'), memoList: $('memoList'), memoTitle: $('memoTitle'), memoContent: $('memoContent'),
+        memoEditModal: $('memoEditModal'), memoEditTitle: $('memoEditTitle'), memoEditContent: $('memoEditContent'),
+        res: {
+            ash: $('resAsh'), sulfur: $('resSulfur'), vol: $('resVol'), bond: $('resBond'),
+            water: $('resWater'), y: $('resY'), heat: $('resHeat'), cost: $('resCost')
         }
-    })
+    };
 
-    function initCoalSelects() {
-        const selects = document.querySelectorAll('.coal-select')
-        selects.forEach(select => {
-            select.innerHTML = '<option value="">请选择煤种</option>'
+    // 初始化
+    window.onload = () => {
+        renderDB();
+        initCoalSelect();
+        renderMemos();
+    };
+
+    // 本地存储
+    const saveDB = () => {
+        localStorage.setItem('coalDB', JSON.stringify(db));
+        renderDB();
+        initCoalSelect();
+    };
+    const saveMemo = () => {
+        localStorage.setItem('memoDB', JSON.stringify(memoDB));
+        renderMemos();
+    };
+
+    // 清空表单
+    const clearForm = () => {
+        els.name.value = els.ash.value = els.sulfur.value = els.vol.value = els.bond.value = '';
+        els.water.value = els.y.value = els.heat.value = els.cost.value = '';
+        currentRockImg = '';
+        els.rockPreview.style.display = 'none';
+        els.updateBtn.style.display = 'none';
+        editIndex = -1;
+    };
+
+    // 煤种下拉框
+    function initCoalSelect() {
+        document.querySelectorAll('select').forEach(sel => {
+            sel.innerHTML = '<option value="">请选择</option>';
             db.forEach(item => {
-                const option = document.createElement('option')
-                option.value = item.name
-                option.textContent = item.name
-                select.appendChild(option)
-            })
-        })
+                const opt = document.createElement('option');
+                opt.value = item.name;
+                opt.textContent = item.name;
+                sel.appendChild(opt);
+            });
+        });
     }
 
-    function updateCoalData(col) {
-        const select = document.querySelector(`.coal-select[data-col="${col}"]`)
-        const coal = db.find(item => item.name === select.value)
-        if (coal) {
-            coalColumnData[col] = {
-                name: coal.name, ash: parseFloat(coal.ash||0), sulfur: parseFloat(coal.sulfur||0),
-                vol: parseFloat(coal.vol||0), bond: parseFloat(coal.bond||0), water: parseFloat(coal.water||0),
-                y: parseFloat(coal.y||0), heat: parseFloat(coal.heat||0), cost: parseFloat(coal.cost||0),
-                rockData: coal.rockData ? coal.rockData.map(v=>parseFloat(v||0)) : Array(10).fill(0)
-            }
-        } else {
-            coalColumnData[col] = {name:'', ash:0, sulfur:0, vol:0, bond:0, water:0, y:0, heat:0, cost:0, rockData:Array(10).fill(0)}
-        }
-        calcWeightAvg()
+    // 岩相图片
+    function selectRockImage() {
+        $('rockImg').click();
+    }
+    $('rockImg').onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file || file.size > 5 * 1024 * 1024) return alert('图片≤5MB');
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            currentRockImg = ev.target.result;
+            els.rockPreview.src = currentRockImg;
+            els.rockPreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    };
+    function clearRockImage() {
+        currentRockImg = '';
+        els.rockPreview.style.display = 'none';
     }
 
-    function showRockModal(index) {
-        const item = db[index]
-        currentRockEditIndex = index
-        if (!item.rockData) item.rockData = Array(10).fill(0)
-        const inputs = document.querySelectorAll('.rock-edit')
-        item.rockData.forEach((v,i)=>inputs[i].value=parseFloat(v||0).toFixed(2))
-        document.getElementById('rockModalImg').src = item.rock || ''
-        document.getElementById('rockModal').style.display = 'flex'
-        calcRockDataSum()
+    // 岩相数据弹窗
+    function showRockModal(idx) {
+        rockEditIndex = idx;
+        const item = db[idx];
+        els.rockInputs.forEach((i, k) => i.value = item.rockData[k] || 0);
+        els.rockModalImg.src = item.rock || '';
+        els.rockModal.style.display = 'flex';
+        calcRockDataSum();
     }
     function calcRockDataSum() {
-        const inputs = document.querySelectorAll('.rock-edit')
-        let sum = 0
-        inputs.forEach(input=>sum+=parseFloat(input.value)||0)
-        document.getElementById('rockDataTip').textContent=`粒径含量总和应接近100%（当前：${sum.toFixed(2)}%）`
-        document.getElementById('rockDataTip').style.color = Math.abs(sum-100)<1?'#1dd1a1':'#ff6b6b'
+        let sum = 0;
+        els.rockInputs.forEach(i => sum += parseFloat(i.value) || 0);
+        els.rockTip.textContent = `粒径总和：${sum.toFixed(2)}%`;
     }
-    function saveRockData(){
-        const inputs = document.querySelectorAll('.rock-edit')
-        const data = Array.from(inputs).map(i=>i.value)
-        const sum = data.reduce((a,v)=>a+parseFloat(v||0),0)
-        if(Math.abs(sum-100)>5&&!confirm(`总和${sum.toFixed(2)}%，偏离100%，是否保存？`)) return
-        db[currentRockEditIndex].rockData = data
-        saveToLocal()
-        initCoalSelects()
-        calcWeightAvg()
-        alert('保存成功')
-        closeRockModal()
+    function saveRockData() {
+        const data = Array.from(els.rockInputs).map(i => i.value);
+        db[rockEditIndex].rockData = data;
+        db[rockEditIndex].rock = els.rockModalImg.src;
+        saveDB();
+        closeRockModal();
     }
-    function deleteCurrentRockImage(){if(!confirm('确认删除图片？'))return;db[currentRockEditIndex].rock='';document.getElementById('rockModalImg').src='';saveToLocal()}
-    function closeRockModal(){document.getElementById('rockModal').style.display='none'}
+    function deleteCurrentRockImage() {
+        els.rockModalImg.src = '';
+    }
+    function closeRockModal() {
+        els.rockModal.style.display = 'none';
+    }
 
-    function selectRockImage(){document.getElementById('rockImg').click()}
-    function initImagePreview(){
-        document.getElementById('rockImg').addEventListener('change',e=>{
-            const file = e.target.files[0]
-            if(!file)return
-            if(file.size>5*1024*1024)return alert('图片不能超过5MB')
-            const reader = new FileReader()
-            reader.onload=ev=>{
-                currentRockBase64=ev.target.result
-                document.getElementById('rockPreview').src=currentRockBase64
-                document.getElementById('rockPreview').style.display='block'
-            }
-            reader.readAsDataURL(file)
-        })
-    }
-    function clearRockImage(){currentRockBase64='';document.getElementById('rockPreview').style.display='none'}
-
-    function renderDB(){
-        const listEl = document.getElementById('dbList')
-        let html = ''
-        if(db.length===0) html=`<tr><td colspan="10">暂无数据</td></tr>`
-        else db.forEach((item,i)=>{
-            html+=`
-            <tr>
-                <td>${item.name}</td>
-                <td>${parseFloat(item.ash||0).toFixed(2)}</td>
-                <td>${parseFloat(item.sulfur||0).toFixed(2)}</td>
-                <td>${parseFloat(item.vol||0).toFixed(2)}</td>
-                <td>${parseFloat(item.bond||0).toFixed(2)}</td>
-                <td>${parseFloat(item.water||0).toFixed(2)}</td>
-                <td>${parseFloat(item.y||0).toFixed(2)}</td>
-                <td>${parseFloat(item.heat||0).toFixed(2)}</td>
-                <td>${parseFloat(item.cost||0).toFixed(2)}</td>
-                <td>
-                    <button class="btn-purple" onclick="showRockModal(${i})">岩相</button>
-                    <button class="btn-warning" onclick="edit(${i})">修改</button>
-                    <button class="btn-danger" onclick="del(${i})">删</button>
-                </td>
-            </tr>`
-        })
-        listEl.innerHTML=html
-        initCoalSelects()
-    }
-    function add(){
-        const name = document.getElementById('name').value.trim()
-        if(!name)return alert('请填写名称')
-        const item = {
-            name,ash:document.getElementById('ash').value,sulfur:document.getElementById('sulfur').value,
-            vol:document.getElementById('vol').value,bond:document.getElementById('bond').value,
-            water:document.getElementById('water').value,y:document.getElementById('y').value,
-            heat:document.getElementById('heat').value,cost:document.getElementById('cost').value,
-            rock:currentRockBase64,rockData:Array(10).fill(0)
+    // 数据增删改
+    function renderDB() {
+        if (db.length === 0) {
+            els.dbList.innerHTML = '<tr><td colspan="10">暂无数据</td></tr>';
+            return;
         }
-        db.push(item)
-        saveToLocal()
-        clearForm()
-        alert('添加成功')
+        els.dbList.innerHTML = db.map((item, i) => `
+        <tr>
+            <td>${item.name}</td>
+            <td>${parseFloat(item.ash || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.sulfur || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.vol || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.bond || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.water || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.y || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.heat || 0).toFixed(2)}</td>
+            <td>${parseFloat(item.cost || 0).toFixed(2)}</td>
+            <td>
+                <button class="btn-purple" onclick="showRockModal(${i})">岩相</button>
+                <button class="btn-warning" onclick="editData(${i})">修改</button>
+                <button class="btn-danger" onclick="deleteData(${i})">删除</button>
+            </td>
+        </tr>`).join('');
     }
-    function del(index){if(!confirm('确认删除？'))return;db.splice(index,1);saveToLocal();calcWeightAvg()}
-    function edit(index){
-        editIndex=index
-        const item=db[index]
-        document.getElementById('name').value=item.name
-        document.getElementById('ash').value=item.ash
-        document.getElementById('sulfur').value=item.sulfur
-        document.getElementById('vol').value=item.vol
-        document.getElementById('bond').value=item.bond
-        document.getElementById('water').value=item.water
-        document.getElementById('y').value=item.y
-        document.getElementById('heat').value=item.heat
-        document.getElementById('cost').value=item.cost
-        currentRockBase64=item.rock||''
-        document.getElementById('rockPreview').src=currentRockBase64
-        document.getElementById('rockPreview').style.display=currentRockBase64?'block':'none'
-        document.getElementById('updateBtn').style.display='inline-block'
+    function addData() {
+        if (!els.name.value) return alert('请输入名称');
+        db.push({
+            name: els.name.value, ash: els.ash.value, sulfur: els.sulfur.value, vol: els.vol.value,
+            bond: els.bond.value, water: els.water.value, y: els.y.value, heat: els.heat.value,
+            cost: els.cost.value, rock: currentRockImg, rockData: Array(10).fill(0)
+        });
+        saveDB();
+        clearForm();
     }
-    function updateSave(){
-        if(editIndex===-1)return
-        const name=document.getElementById('name').value.trim()
-        if(!name)return alert('请填写名称')
-        db[editIndex]={...db[editIndex],name,ash:document.getElementById('ash').value,sulfur:document.getElementById('sulfur').value,vol:document.getElementById('vol').value,bond:document.getElementById('bond').value,water:document.getElementById('water').value,y:document.getElementById('y').value,heat:document.getElementById('heat').value,cost:document.getElementById('cost').value,rock:currentRockBase64}
-        saveToLocal()
-        clearForm()
-        calcWeightAvg()
-        alert('修改成功')
+    function deleteData(idx) {
+        if (!confirm('确认删除？')) return;
+        db.splice(idx, 1);
+        saveDB();
+        calcWeightAvg();
     }
-    function clearForm(){document.querySelectorAll('.form input').forEach(i=>i.value='');currentRockBase64='';document.getElementById('rockPreview').style.display='none';document.getElementById('updateBtn').style.display='none';editIndex=-1}
-    function saveToLocal(){localStorage.setItem('coalDB',JSON.stringify(db));renderDB()}
+    function editData(idx) {
+        editIndex = idx;
+        const item = db[idx];
+        els.name.value = item.name;
+        els.ash.value = item.ash;
+        els.sulfur.value = item.sulfur;
+        els.vol.value = item.vol;
+        els.bond.value = item.bond;
+        els.water.value = item.water;
+        els.y.value = item.y;
+        els.heat.value = item.heat;
+        els.cost.value = item.cost;
+        currentRockImg = item.rock || '';
+        els.rockPreview.src = currentRockImg;
+        els.rockPreview.style.display = currentRockImg ? 'block' : 'none';
+        els.updateBtn.style.display = 'inline-block';
+    }
+    function updateSave() {
+        if (!els.name.value) return alert('请输入名称');
+        Object.assign(db[editIndex], {
+            name: els.name.value, ash: els.ash.value, sulfur: els.sulfur.value, vol: els.vol.value,
+            bond: els.bond.value, water: els.water.value, y: els.y.value, heat: els.heat.value,
+            cost: els.cost.value, rock: currentRockImg
+        });
+        saveDB();
+        clearForm();
+        calcWeightAvg();
+    }
 
+    // 加权计算
+    function updateCoalData(col) {
+        const name = document.querySelectorAll('select')[col - 1].value;
+        const item = db.find(i => i.name === name) || coalData[col];
+        coalData[col] = item;
+        calcWeightAvg();
+    }
     function calcWeightAvg() {
-        let totalRate=0
-        const rates=[]
-        
-        for(let i=1;i<=10;i++){
-            const rate=parseFloat(document.querySelector(`.rate-input[data-col="${i}"]`).value)||0
-            rates.push(rate)
-            totalRate+=rate
+        const rates = Array.from(document.querySelectorAll('.rate-input')).map(i => parseFloat(i.value) || 0);
+        const total = rates.reduce((a, b) => a + b, 0);
+        let ash = 0, sulfur = 0, vol = 0, bond = 0, water = 0, y = 0, heat = 0, cost = 0;
+
+        if (total > 0) {
+            rates.forEach((r, i) => {
+                const c = coalData[i + 1];
+                ash += c.ash * r;
+                sulfur += c.sulfur * r;
+                vol += c.vol * r;
+                bond += c.bond * r;
+                water += c.water * r;
+                y += c.y * r;
+                heat += c.heat * r;
+                cost += c.cost * r;
+            });
+            els.res.ash.textContent = (ash / total).toFixed(2);
+            els.res.sulfur.textContent = (sulfur / total).toFixed(2);
+            els.res.vol.textContent = (vol / total).toFixed(2);
+            els.res.bond.textContent = (bond / total).toFixed(2);
+            els.res.water.textContent = (water / total).toFixed(2);
+            els.res.y.textContent = (y / total).toFixed(2);
+            els.res.heat.textContent = (heat / total).toFixed(2);
+            els.res.cost.textContent = (cost / total).toFixed(2);
+        } else {
+            Object.values(els.res).forEach(i => i.textContent = '0.00');
         }
-
-        let ashSum = 0, sulfurSum = 0, volSum = 0, bondSum = 0
-        let waterSum = 0, ySum = 0, heatSum = 0, costSum = 0
-
-        if(totalRate>0){
-            for(let i=1;i<=10;i++){
-                const coal = coalColumnData[i]
-                const rate = rates[i-1]
-                
-                ashSum += coal.ash * rate
-                sulfurSum += coal.sulfur * rate
-                volSum += coal.vol * rate
-                bondSum += coal.bond * rate
-                waterSum += coal.water * rate
-                ySum += coal.y * rate
-                heatSum += coal.heat * rate
-                costSum += coal.cost * rate
-            }
-
-            document.getElementById('result-ash').textContent = (ashSum / totalRate).toFixed(2)
-            document.getElementById('result-sulfur').textContent = (sulfurSum / totalRate).toFixed(2)
-            document.getElementById('result-vol').textContent = (volSum / totalRate).toFixed(2)
-            document.getElementById('result-bond').textContent = (bondSum / totalRate).toFixed(2)
-            document.getElementById('result-water').textContent = (waterSum / totalRate).toFixed(2)
-            document.getElementById('result-y').textContent = (ySum / totalRate).toFixed(2)
-            document.getElementById('result-heat').textContent = (heatSum / totalRate).toFixed(2)
-            document.getElementById('result-cost').textContent = (costSum / totalRate).toFixed(2)
-        }else{
-            document.getElementById('result-ash').textContent = '0.00'
-            document.getElementById('result-sulfur').textContent = '0.00'
-            document.getElementById('result-vol').textContent = '0.00'
-            document.getElementById('result-bond').textContent = '0.00'
-            document.getElementById('result-water').textContent = '0.00'
-            document.getElementById('result-y').textContent = '0.00'
-            document.getElementById('result-heat').textContent = '0.00'
-            document.getElementById('result-cost').textContent = '0.00'
-        }
-
-        calcRockWeightAvg(rates,totalRate)
+        calcRockAvg(rates, total);
     }
-
-    function calcRockWeightAvg(rates,totalRate){
-        const sum=Array(10).fill(0)
-        if(totalRate>0){
-            for(let i=1;i<=10;i++){
-                const rockData=coalColumnData[i].rockData
-                const rate=rates[i-1]
-                for(let c=0;c<10;c++) sum[c]+=rockData[c]*rate
-            }
-            window.currentRockAvg=sum.map(v=>(v/totalRate).toFixed(2))
-        }else{
-            window.currentRockAvg=Array(10).fill('0.00')
+    function calcRockAvg(rates, total) {
+        const sum = Array(10).fill(0);
+        if (total > 0) {
+            rates.forEach((r, i) => coalData[i + 1].rockData.forEach((v, k) => sum[k] += v * r));
+            rockAvg = sum.map(v => (v / total).toFixed(2));
+        } else {
+            rockAvg = Array(10).fill('0.00');
         }
     }
-
-    function clearWeightTable(){
-        if(!confirm('确认清空？'))return
-        document.querySelectorAll('.coal-select').forEach(s=>s.value='')
-        document.querySelectorAll('.rate-input').forEach(i=>i.value='')
-        document.getElementById('result-ash').textContent = '0.00'
-        document.getElementById('result-sulfur').textContent = '0.00'
-        document.getElementById('result-vol').textContent = '0.00'
-        document.getElementById('result-bond').textContent = '0.00'
-        document.getElementById('result-water').textContent = '0.00'
-        document.getElementById('result-y').textContent = '0.00'
-        document.getElementById('result-heat').textContent = '0.00'
-        document.getElementById('result-cost').textContent = '0.00'
-        for(let i=1;i<=10;i++) coalColumnData[i]={name:'',ash:0,sulfur:0,vol:0,bond:0,water:0,y:0,heat:0,cost:0,rockData:Array(10).fill(0)}
-        window.currentRockAvg=Array(10).fill('0.00')
+    function clearWeightTable() {
+        document.querySelectorAll('select, input').forEach(i => i.value = '');
+        Object.values(els.res).forEach(i => i.textContent = '0.00');
+        coalData.forEach((_, i) => coalData[i] = { name: '', ash: 0, sulfur: 0, vol: 0, bond: 0, water: 0, y: 0, heat: 0, cost: 0, rockData: Array(10).fill(0) });
+        rockAvg = Array(10).fill(0);
+    }
+    function showAvgRockModal() {
+        els.avgSum.textContent = rockAvg.reduce((a, b) => parseFloat(a) + parseFloat(b), 0).toFixed(2);
+        rockAvg.forEach((v, i) => $(`c${i + 1}`).textContent = v);
+        els.avgModal.style.display = 'flex';
+    }
+    function closeAvgRockModal() {
+        els.avgModal.style.display = 'none';
     }
 
-    function showAvgRockModal(){
-        const data=window.currentRockAvg||Array(10).fill('0.00')
-        const sum=data.reduce((a,v)=>a+parseFloat(v||0),0)
-        document.getElementById('avgRockSum').textContent=sum.toFixed(2)
-        for(let i=0;i<10;i++)document.getElementById(`c${i+1}`).textContent=data[i]
-        document.getElementById('avgRockModal').style.display='flex'
-    }
-    function closeAvgRockModal(){document.getElementById('avgRockModal').style.display='none'}
-
-    // ========== 兼容版Excel导入导出 ==========
+    // Excel
     function exportExcel() {
-        if(db.length===0)return alert('数据库为空，无法导出')
-        
-        const excelData = db.map(item => {
-            const rockData = item.rockData ? item.rockData.map(v=>parseFloat(v||0).toFixed(2)) : Array(10).fill('0.00')
-            return {
-                '名称': item.name,
-                '灰分': parseFloat(item.ash||0).toFixed(2),
-                '硫': parseFloat(item.sulfur||0).toFixed(2),
-                '挥发': parseFloat(item.vol||0).toFixed(2),
-                '粘结': parseFloat(item.bond||0).toFixed(2),
-                '水分': parseFloat(item.water||0).toFixed(2),
-                'Y值': parseFloat(item.y||0).toFixed(2),
-                '热强': parseFloat(item.heat||0).toFixed(2),
-                '成本': parseFloat(item.cost||0).toFixed(2),
-                '＜0.47': rockData[0],
-                '0.47-0.58': rockData[1],
-                '0.58-0.75': rockData[2],
-                '0.75-0.90': rockData[3],
-                '0.90-1.13': rockData[4],
-                '1.13-1.53': rockData[5],
-                '1.53-1.70': rockData[6],
-                '1.70-1.90': rockData[7],
-                '1.90-2.35': rockData[8],
-                '＞2.35': rockData[9]
-            }
-        })
-
-        const ws = XLSX.utils.json_to_sheet(excelData)
-        const wb = XLSX.utils.book_new()
-        XLSX.utils.book_append_sheet(wb, ws, "煤质数据")
-        XLSX.writeFile(wb, `煤质数据库_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`)
-        alert('Excel导出成功（包含岩相数据）！')
+        if (!db.length) return alert('无数据');
+        const data = db.map(item => ({
+            名称: item.name, 灰分: item.ash, 硫: item.sulfur, 挥发: item.vol, 粘结: item.bond,
+            水分: item.water, Y值: item.y, 热强: item.heat, 成本: item.cost
+        }));
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "数据");
+        XLSX.writeFile(wb, "煤质数据.xlsx");
+    }
+    function importExcel(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const data = XLSX.read(ev.target.result, { type: 'binary' });
+            const json = XLSX.utils.sheet_to_json(data.Sheets[data.SheetNames[0]]);
+            db.length = 0;
+            json.forEach(item => db.push({
+                name: item.名称 || '', ash: item.灰分 || 0, sulfur: item.硫 || 0, vol: item.挥发 || 0,
+                bond: item.粘结 || 0, water: item.水分 || 0, y: item.Y值 || 0, heat: item.热强 || 0,
+                cost: item.成本 || 0, rock: '', rockData: Array(10).fill(0)
+            }));
+            saveDB();
+            alert('导入成功');
+        };
+        reader.readAsBinaryString(file);
     }
 
-    function importExcel(event) {
-        const file = event.target.files[0]
-        if(!file)return
-        
-        const fileExt = file.name.split('.').pop().toLowerCase()
-        if(!['xls','xlsx'].includes(fileExt)) {
-            alert('请选择.xls或.xlsx格式的Excel文件！')
-            return
+    // ====================== 备忘录功能 ======================
+    function openMemoModal() {
+        els.memoModal.style.display = 'flex';
+        renderMemos();
+    }
+    function closeMemoModal() {
+        els.memoModal.style.display = 'none';
+    }
+    function renderMemos() {
+        if (memoDB.length === 0) {
+            els.memoList.innerHTML = '<tr><td colspan="5">暂无备忘录</td></tr>';
+            return;
         }
-
-        const reader = new FileReader()
-        reader.onload = function(e) {
-            try {
-                const data = new Uint8Array(e.target.result)
-                const wb = XLSX.read(data, { type: 'array' })
-                const wsname = wb.SheetNames[0]
-                const ws = wb.Sheets[wsname]
-                const excelData = XLSX.utils.sheet_to_json(ws)
-                
-                if(excelData.length === 0) {
-                    alert('Excel文件中无数据！')
-                    return
-                }
-
-                // 仅校验核心必填列，岩相列兼容处理
-                const firstRowKeys = Object.keys(excelData[0])
-                const missingBaseHeaders = requiredBaseHeaders.filter(header => !firstRowKeys.includes(header))
-                
-                if(missingBaseHeaders.length > 0) {
-                    alert(`Excel文件缺少核心必要列：${missingBaseHeaders.join('、')}\n请确保表头包含：${requiredBaseHeaders.join('、')}`)
-                    return
-                }
-
-                // 岩相列自动匹配兼容
-                const rockHeaders = Object.keys(rockHeaderMap)
-                const rockDataMap = {}
-                rockHeaders.forEach(standardHeader => {
-                    const matchHeader = firstRowKeys.find(key => 
-                        rockHeaderMap[standardHeader].some(alias => alias.toLowerCase() === key.toLowerCase().trim())
-                    )
-                    rockDataMap[standardHeader] = matchHeader || null
-                })
-
-                // 转换数据
-                const newDbData = excelData.map(item => {
-                    const rockData = []
-                    rockHeaders.forEach(standardHeader => {
-                        const matchKey = rockDataMap[standardHeader]
-                        rockData.push(matchKey ? parseFloat(item[matchKey] || 0) : 0)
-                    })
-
-                    return {
-                        name: item['名称'] || '',
-                        ash: item['灰分'] || 0,
-                        sulfur: item['硫'] || 0,
-                        vol: item['挥发'] || 0,
-                        bond: item['粘结'] || 0,
-                        water: item['水分'] || 0,
-                        y: item['Y值'] || 0,
-                        heat: item['热强'] || 0,
-                        cost: item['成本'] || 0,
-                        rock: '',
-                        rockData: rockData
-                    }
-                })
-
-                if(!confirm(`即将导入${newDbData.length}条数据，是否覆盖原有数据库？`)) return
-                
-                db.length = 0
-                db.push(...newDbData)
-                saveToLocal()
-                calcWeightAvg()
-                
-                alert(`成功导入${newDbData.length}条数据！\n岩相列已自动匹配，缺失列已填充0值`)
-            } catch (err) {
-                alert(`Excel导入失败：${err.message}`)
-                console.error('导入错误：', err)
-            }
-        }
-        reader.readAsArrayBuffer(file)
-        document.getElementById('excelImport').value = ''
+        els.memoList.innerHTML = memoDB.map((m, i) => `
+        <tr>
+            <td>${i + 1}</td>
+            <td>${m.title || '无标题'}</td>
+            <td class="memo-content">${m.content || '无内容'}</td>
+            <td>${m.time}</td>
+            <td>
+                <button class="btn-warning" onclick="editMemo(${i})">编辑</button>
+                <button class="btn-danger" onclick="deleteMemo(${i})">删除</button>
+            </td>
+        </tr>`).join('');
+    }
+    function addMemo() {
+        const title = els.memoTitle.value.trim();
+        const content = els.memoContent.value.trim();
+        if (!title && !content) return alert('标题/内容不能为空');
+        memoDB.push({ title, content, time: new Date().toLocaleString() });
+        saveMemo();
+        els.memoTitle.value = els.memoContent.value = '';
+    }
+    function editMemo(idx) {
+        memoEditIdx = idx;
+        const m = memoDB[idx];
+        els.memoEditTitle.value = m.title || '';
+        els.memoEditContent.value = m.content || '';
+        els.memoEditModal.style.display = 'flex';
+    }
+    function saveMemoEdit() {
+        const title = els.memoEditTitle.value.trim();
+        const content = els.memoEditContent.value.trim();
+        if (!title && !content) return alert('不能为空');
+        memoDB[memoEditIdx] = { ...memoDB[memoEditIdx], title, content };
+        saveMemo();
+        closeMemoEditModal();
+    }
+    function deleteMemo(idx) {
+        if (!confirm('确定删除？')) return;
+        memoDB.splice(idx, 1);
+        saveMemo();
+    }
+    function clearAllMemos() {
+        if (!confirm('确定清空所有？')) return;
+        memoDB.length = 0;
+        saveMemo();
+    }
+    function closeMemoEditModal() {
+        els.memoEditModal.style.display = 'none';
     }
 </script>
 </body>
