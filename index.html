@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>煤质数据库系统（最终修复版）</title>
+<title>煤质数据库系统（独立结果表版）</title>
 <style>
     * {
         box-sizing: border-box;
@@ -16,17 +16,12 @@
         padding: 10px;
     }
     .main {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        gap: 16px;
         width: 100%;
         height: 100%;
         min-height: calc(100vh - 20px);
     }
     .left {
-        width: fit-content;
-        flex-shrink: 0;
+        width: 100%;
         background: #fff;
         padding: 20px;
         border-radius: 10px;
@@ -37,7 +32,6 @@
     .left h3 {
         font-size: 18px;
         margin-bottom: 15px;
-        white-space: nowrap;
     }
     .form {
         display: grid;
@@ -85,7 +79,6 @@
     .btn-purple  { background: #70a1ff; }
     .btn-gray    { background: #909399; }
 
-    /* 按钮行样式 */
     .btn-row {
         display: flex;
         align-items: center;
@@ -109,93 +102,122 @@
     }
     #rockImg { display: none; }
 
-    .db-table {
+    /* ========== 核心修改：表格容器样式 ========== */
+    .table-container {
         width: 100%;
-        border-collapse: collapse;
+        overflow-x: auto; /* 横向滚动 */
         margin-top: 12px;
+        margin-bottom: 20px;
+    }
+    
+    /* ========== 新增：数据库表格滚动容器 ========== */
+    .db-table-container {
+        width: 100%;
+        overflow-x: auto;
+        margin-top: 12px;
+        margin-bottom: 20px;
+        max-height: 280px; /* 固定高度，显示5行数据 + 表头 */
+        overflow-y: auto; /* 垂直滚动 */
+        border: 1px solid #e5e6eb;
+        border-radius: 4px;
+    }
+    
+    /* ========== 核心修改：统一所有表格宽度和样式 ========== */
+    .db-table, .weight-select-table, .weight-result-table {
+        width: 100%;
+        min-width: 800px; /* 最小宽度，防止过窄 */
+        border-collapse: collapse;
         font-size: 14px;
+        table-layout: auto; /* 自适应列宽 */
+    }
+    
+    /* 数据库表格样式 - 优化滚动表头固定 */
+    .db-table {
+        border: none;
+    }
+    .db-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
     .db-table th, .db-table td {
         border: 1px solid #e5e6eb;
         padding: 8px 10px;
         text-align: center;
-        white-space: nowrap;
+        white-space: nowrap; /* 防止文字换行 */
     }
     .db-table th {
         background: #f0f5ff;
         font-weight: 500;
     }
-
-    .right {
-        flex: 1;
-        background: white;
-        padding: 22px;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        overflow: auto;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    .right h3 {
-        font-size: 18px;
-        margin-bottom: 12px;
-    }
-    .rate-tip {
-        color: #ff6b6b;
-        font-size: 14px;
-        margin: 8px 0;
-        font-weight: 500;
-    }
-    .right-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
+    .db-table tbody tr:hover {
+        background-color: #f8f9fa; /* 行悬停效果 */
     }
 
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        font-size: 16px;
-        table-layout: auto;
+    /* 煤种选择表格样式 */
+    .weight-select-table {
+        margin-top: 20px;
+        margin-bottom: 15px;
     }
-    .data-table th {
+    .weight-select-table th, .weight-select-table td {
+        border: 1px solid #e5e6eb;
+        padding: 8px 10px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    .weight-select-table th {
         background: #4096ff;
         color: #fff;
-        padding: 10px 8px;
-        border: 1px solid #3088f0;
-        height: 41px;
-        white-space: nowrap;
+        font-weight: 500;
     }
-    .data-table td {
-        border: 1px solid #e5e6eb;
-        padding: 8px 8px;
-        text-align: center;
-        white-space: nowrap;
-        height: 41px;
-    }
-    .data-table tr:nth-child(even):not(.avg-row) {
-        background-color: #fafbfc;
-    }
-    .data-table tr:hover:not(.avg-row) {
-        background-color: #f0f7ff !important;
-    }
-    .avg-row {
-        background: #fff7e6 !important;
-        font-weight: bold;
-        color: #d46100 !important;
-    }
-    .avg-row td { border-top: 2px solid #ffc069 !important; }
-    .data-table input {
+    .weight-select-table select, .weight-select-table input {
         width: 100%;
         height: 30px;
-        text-align: center;
+        padding: 0 8px;
         border: 1px solid #dcdfe6;
         border-radius: 4px;
         outline: none;
-        font-size: 15px;
+        font-size: 14px;
+        text-align: center;
+    }
+    .weight-select-table select:focus, .weight-select-table input:focus {
+        border-color: #4096ff;
+    }
+
+    /* 独立的加权结果表格（九列） */
+    .weight-result-table {
+        margin-top: 15px;
+        background: #fff7e6;
+    }
+    .weight-result-table th, .weight-result-table td {
+        border: 1px solid #e5e6eb;
+        padding: 10px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    .weight-result-table th {
+        background: #ff9f43;
+        color: #fff;
+        font-weight: 500;
+    }
+    .weight-result-table td {
+        font-weight: bold;
+        color: #d46100;
+    }
+    /* 岩相按钮样式 */
+    .rock-btn {
+        width: 80px !important;
+        height: 28px !important;
+        font-size: 13px !important;
+        margin: 0 auto !important;
+        display: block !important;
+    }
+
+    .weight-ctrl {
+        margin: 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
 
     /* 弹窗样式 */
@@ -227,7 +249,6 @@
         display: block;
         margin: 0 auto;
     }
-    /* 移除图表相关样式 */
     .rock-table {
         width: 100% !important;
         table-layout: fixed;
@@ -266,7 +287,7 @@
 </head>
 <body>
 
-<!-- 左侧岩相弹窗 -->
+<!-- 岩相弹窗 -->
 <div class="modal" id="rockModal">
     <div class="modal-content">
         <img id="rockModalImg">
@@ -296,20 +317,14 @@
                 <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
                 <td><input type="number" step="0.01" class="rock-edit" oninput="calcRockDataSum()"></td>
             </tr>
-            <tr class="fixed-row">
-                <td>煤种</td>
-                <td>褐煤</td><td>长焰煤</td><td>气煤</td><td>1/3焦</td><td>肥煤</td>
-                <td>焦煤</td><td>瘦煤</td><td>贫瘦煤</td><td>贫煤</td><td>无烟煤</td>
-            </tr>
         </table>
     </div>
 </div>
 
-<!-- 右侧加权岩相弹窗（移除图表） -->
+<!-- 岩相加权弹窗 -->
 <div class="modal" id="avgRockModal">
     <div class="modal-content">
-        <h3 style="text-align:center; margin-bottom:10px">岩相加权平均正态分布分析</h3>
-        <!-- 移除图表相关HTML -->
+        <h3 style="text-align:center; margin-bottom:10px">岩相加权平均</h3>
         <div class="rock-tip">加权粒径含量总和：<span id="avgRockSum">0.00</span>%</div>
         <table class="rock-table">
             <tr class="fixed-row">
@@ -320,21 +335,9 @@
             </tr>
             <tr>
                 <td>加权含量（%）</td>
-                <td id="c1">0.00</td>
-                <td id="c2">0.00</td>
-                <td id="c3">0.00</td>
-                <td id="c4">0.00</td>
-                <td id="c5">0.00</td>
-                <td id="c6">0.00</td>
-                <td id="c7">0.00</td>
-                <td id="c8">0.00</td>
-                <td id="c9">0.00</td>
-                <td id="c10">0.00</td>
-            </tr>
-            <tr class="fixed-row">
-                <td>煤种</td>
-                <td>褐煤</td><td>长焰煤</td><td>气煤</td><td>1/3焦</td><td>肥煤</td>
-                <td>焦煤</td><td>瘦煤</td><td>贫瘦煤</td><td>贫煤</td><td>无烟煤</td>
+                <td id="c1">0.00</td><td id="c2">0.00</td><td id="c3">0.00</td><td id="c4">0.00</td>
+                <td id="c5">0.00</td><td id="c6">0.00</td><td id="c7">0.00</td><td id="c8">0.00</td>
+                <td id="c9">0.00</td><td id="c10">0.00</td>
             </tr>
         </table>
         <div style="text-align:center; margin-top:15px">
@@ -365,7 +368,6 @@
             <input type="file" id="rockImg" accept="image/*">
         </div>
         
-        <!-- 按钮行：添加数据 + 导出 + 导入 同排 -->
         <div class="btn-row">
             <button onclick="add()" class="btn-primary">添加数据</button>
             <button onclick="exportData()" class="btn-success">导出数据库</button>
@@ -375,126 +377,217 @@
         
         <input type="file" id="fileImport" accept=".json" onchange="importData(event)">
         
-        <table class="db-table">
-            <tr><th>名称</th><th>灰分</th><th>硫</th><th>挥发</th><th>粘结</th><th>水分</th><th>Y值</th><th>热强</th><th>成本</th><th>操作</th></tr>
-            <tbody id="dbList"></tbody>
-        </table>
-    </div>
-
-    <div class="right">
-        <div class="right-header">
-            <h3>煤质指标计算表（加权平均）</h3>
-            <div>
-                <button onclick="clearTable()" class="btn-danger">清空表格</button>
-            </div>
+        <!-- ========== 核心修改：数据库表格滚动容器 ========== -->
+        <!-- 数据库表格 -->
+        <div class="db-table-container">
+            <table class="db-table">
+                <thead>
+                    <tr>
+                        <th>名称</th><th>灰分</th><th>硫</th><th>挥发</th><th>粘结</th>
+                        <th>水分</th><th>Y值</th><th>热强</th><th>成本</th><th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="dbList"></tbody>
+            </table>
         </div>
-        <div class="rate-tip" id="rateSumTip">比例总和：0.00%（建议为100%）</div>
-        <table class="data-table">
-            <thead>
-                <tr><th>行号</th><th>名称</th><th>灰分</th><th>硫</th><th>挥发</th><th>粘结</th><th>水分</th><th>Y值</th><th>热强</th><th>成本</th><th>比例(%)</th><th>操作</th></tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+
+        <!-- 1. 煤种选择和比例输入表格 -->
+        <h3 style="margin-top: 30px;">煤质加权平均计算</h3>
+        <!-- 已删除：比例总和提示行 -->
+        <div class="weight-ctrl">
+            <button onclick="clearWeightTable()" class="btn-danger">清空计算表</button>
+            <!-- 已删除：原有岩相按钮 -->
+        </div>
+        <!-- ========== 核心修改：煤种选择表格增加容器 ========== -->
+        <div class="table-container">
+            <table class="weight-select-table">
+                <thead>
+                    <tr>
+                        <th>项目</th>
+                        <th>列1</th><th>列2</th><th>列3</th><th>列4</th><th>列5</th>
+                        <th>列6</th><th>列7</th><th>列8</th><th>列9</th><th>列10</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 煤种名称行 -->
+                    <tr>
+                        <td>煤种名称</td>
+                        <td><select class="coal-select" data-col="1" onchange="updateCoalData(1)"></select></td>
+                        <td><select class="coal-select" data-col="2" onchange="updateCoalData(2)"></select></td>
+                        <td><select class="coal-select" data-col="3" onchange="updateCoalData(3)"></select></td>
+                        <td><select class="coal-select" data-col="4" onchange="updateCoalData(4)"></select></td>
+                        <td><select class="coal-select" data-col="5" onchange="updateCoalData(5)"></select></td>
+                        <td><select class="coal-select" data-col="6" onchange="updateCoalData(6)"></select></td>
+                        <td><select class="coal-select" data-col="7" onchange="updateCoalData(7)"></select></td>
+                        <td><select class="coal-select" data-col="8" onchange="updateCoalData(8)"></select></td>
+                        <td><select class="coal-select" data-col="9" onchange="updateCoalData(9)"></select></td>
+                        <td><select class="coal-select" data-col="10" onchange="updateCoalData(10)"></select></td>
+                    </tr>
+                    <!-- 比例输入行 -->
+                    <tr>
+                        <td>比例(%)</td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="1" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="2" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="3" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="4" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="5" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="6" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="7" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="8" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="9" oninput="calcWeightAvg()"></td>
+                        <td><input type="number" step="0.01" min="0" max="100" class="rate-input" data-col="10" oninput="calcWeightAvg()"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 2. 独立的加权结果表格（最后一列改为岩相按钮） -->
+        <h3 style="margin-top: 20px;">加权计算结果</h3>
+        <!-- ========== 核心修改：加权结果表格增加容器 ========== -->
+        <div class="table-container">
+            <table class="weight-result-table">
+                <thead>
+                    <tr>
+                        <th>灰分加权</th>
+                        <th>硫分加权</th>
+                        <th>挥发分加权</th>
+                        <th>粘结指数加权</th>
+                        <th>水分加权</th>
+                        <th>Y值加权</th>
+                        <th>热强加权</th>
+                        <th>成本加权</th>
+                        <th>岩相查看</th> <!-- 修改：最后一列改为岩相查看 -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="result-ash">0.00</td>
+                        <td id="result-sulfur">0.00</td>
+                        <td id="result-vol">0.00</td>
+                        <td id="result-bond">0.00</td>
+                        <td id="result-water">0.00</td>
+                        <td id="result-y">0.00</td>
+                        <td id="result-heat">0.00</td>
+                        <td id="result-cost">0.00</td>
+                        <td>
+                            <!-- 修改：添加岩相按钮 -->
+                            <button class="btn-purple rock-btn" onclick="showAvgRockModal()">岩相</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<!-- 移除Chart.js引入 -->
 <script>
     const db = JSON.parse(localStorage.getItem('coalDB')) || []
     let editIndex = -1
     let currentRockBase64 = ''
     let currentRockEditIndex = -1
+    const coalColumnData = {}
 
     window.addEventListener('DOMContentLoaded', () => {
         renderDB()
-        renderTable()
-        calcAvg()
+        initCoalSelects()
         initImagePreview()
-        // 初始化默认数据，避免空数据导致渲染异常
         window.currentRockAvg = Array(10).fill('0.00')
+        for (let i = 1; i <= 10; i++) {
+            coalColumnData[i] = {
+                name: '', ash:0, sulfur:0, vol:0, bond:0, water:0, y:0, heat:0, cost:0, rockData: Array(10).fill(0)
+            }
+        }
     })
 
-    // ========== 左侧岩相功能 ==========
+    // 初始化煤种下拉框
+    function initCoalSelects() {
+        const selects = document.querySelectorAll('.coal-select')
+        selects.forEach(select => {
+            select.innerHTML = '<option value="">请选择煤种</option>'
+            db.forEach(item => {
+                const option = document.createElement('option')
+                option.value = item.name
+                option.textContent = item.name
+                select.appendChild(option)
+            })
+        })
+    }
+
+    // 更新选中煤种数据
+    function updateCoalData(col) {
+        const select = document.querySelector(`.coal-select[data-col="${col}"]`)
+        const coal = db.find(item => item.name === select.value)
+        if (coal) {
+            coalColumnData[col] = {
+                name: coal.name, ash: parseFloat(coal.ash||0), sulfur: parseFloat(coal.sulfur||0),
+                vol: parseFloat(coal.vol||0), bond: parseFloat(coal.bond||0), water: parseFloat(coal.water||0),
+                y: parseFloat(coal.y||0), heat: parseFloat(coal.heat||0), cost: parseFloat(coal.cost||0),
+                rockData: coal.rockData ? coal.rockData.map(v=>parseFloat(v||0)) : Array(10).fill(0)
+            }
+        } else {
+            coalColumnData[col] = {name:'', ash:0, sulfur:0, vol:0, bond:0, water:0, y:0, heat:0, cost:0, rockData:Array(10).fill(0)}
+        }
+        calcWeightAvg()
+    }
+
+    // 岩相功能
     function showRockModal(index) {
         const item = db[index]
         currentRockEditIndex = index
         if (!item.rockData) item.rockData = Array(10).fill(0)
         const inputs = document.querySelectorAll('.rock-edit')
-        item.rockData.forEach((v, i) => inputs[i].value = parseFloat(v || 0).toFixed(2))
+        item.rockData.forEach((v,i)=>inputs[i].value=parseFloat(v||0).toFixed(2))
         document.getElementById('rockModalImg').src = item.rock || ''
         document.getElementById('rockModal').style.display = 'flex'
         calcRockDataSum()
     }
-
     function calcRockDataSum() {
         const inputs = document.querySelectorAll('.rock-edit')
         let sum = 0
-        inputs.forEach(input => {
-            sum += parseFloat(input.value) || 0
-        })
-        document.getElementById('rockDataTip').textContent = `粒径含量总和应接近100%（当前：${sum.toFixed(2)}%）`
-        document.getElementById('rockDataTip').style.color = Math.abs(sum - 100) < 1 ? '#1dd1a1' : '#ff6b6b'
+        inputs.forEach(input=>sum+=parseFloat(input.value)||0)
+        document.getElementById('rockDataTip').textContent=`粒径含量总和应接近100%（当前：${sum.toFixed(2)}%）`
+        document.getElementById('rockDataTip').style.color = Math.abs(sum-100)<1?'#1dd1a1':'#ff6b6b'
     }
-
-    function saveRockData() {
+    function saveRockData(){
         const inputs = document.querySelectorAll('.rock-edit')
-        const data = Array.from(inputs).map(i => i.value)
-        const sum = data.reduce((acc, val) => acc + parseFloat(val || 0), 0)
-        if (Math.abs(sum - 100) > 5 && !confirm(`粒径含量总和为${sum.toFixed(2)}%，偏离100%超过5%，是否仍保存？`)) {
-            return
-        }
+        const data = Array.from(inputs).map(i=>i.value)
+        const sum = data.reduce((a,v)=>a+parseFloat(v||0),0)
+        if(Math.abs(sum-100)>5&&!confirm(`总和${sum.toFixed(2)}%，偏离100%，是否保存？`)) return
         db[currentRockEditIndex].rockData = data
         saveToLocal()
-        calcAvg()
+        initCoalSelects()
+        calcWeightAvg()
         alert('保存成功')
         closeRockModal()
     }
+    function deleteCurrentRockImage(){if(!confirm('确认删除图片？'))return;db[currentRockEditIndex].rock='';document.getElementById('rockModalImg').src='';saveToLocal()}
+    function closeRockModal(){document.getElementById('rockModal').style.display='none'}
 
-    function deleteCurrentRockImage() {
-        if (!confirm('确认删除图片？')) return
-        db[currentRockEditIndex].rock = ''
-        document.getElementById('rockModalImg').src = ''
-        saveToLocal()
-    }
-
-    function closeRockModal() {
-        document.getElementById('rockModal').style.display = 'none'
-    }
-
-    // ========== 图片上传 ==========
-    function selectRockImage() {
-        document.getElementById('rockImg').click()
-    }
-
-    function initImagePreview() {
-        document.getElementById('rockImg').addEventListener('change', e => {
+    // 图片上传
+    function selectRockImage(){document.getElementById('rockImg').click()}
+    function initImagePreview(){
+        document.getElementById('rockImg').addEventListener('change',e=>{
             const file = e.target.files[0]
-            if (!file) return
-            if (file.size > 5 * 1024 * 1024) {
-                alert('图片大小不能超过5MB')
-                return
-            }
+            if(!file)return
+            if(file.size>5*1024*1024)return alert('图片不能超过5MB')
             const reader = new FileReader()
-            reader.onload = ev => {
-                currentRockBase64 = ev.target.result
-                document.getElementById('rockPreview').src = currentRockBase64
-                document.getElementById('rockPreview').style.display = 'block'
+            reader.onload=ev=>{
+                currentRockBase64=ev.target.result
+                document.getElementById('rockPreview').src=currentRockBase64
+                document.getElementById('rockPreview').style.display='block'
             }
             reader.readAsDataURL(file)
         })
     }
+    function clearRockImage(){currentRockBase64='';document.getElementById('rockPreview').style.display='none'}
 
-    function clearRockImage() {
-        currentRockBase64 = ''
-        document.getElementById('rockPreview').style.display = 'none'
-    }
-
-    // ========== 数据增删改查 ==========
-    function renderDB() {
+    // 数据增删改查
+    function renderDB(){
         const listEl = document.getElementById('dbList')
         let html = ''
-        db.forEach((item, i) => {
-            html += `
+        if(db.length===0) html=`<tr><td colspan="10">暂无数据</td></tr>`
+        else db.forEach((item,i)=>{
+            html+=`
             <tr>
                 <td>${item.name}</td>
                 <td>${parseFloat(item.ash||0).toFixed(2)}</td>
@@ -506,338 +599,188 @@
                 <td>${parseFloat(item.heat||0).toFixed(2)}</td>
                 <td>${parseFloat(item.cost||0).toFixed(2)}</td>
                 <td>
-                    <button class="btn-success" onclick="addToTable(${i})">添加</button>
                     <button class="btn-purple" onclick="showRockModal(${i})">岩相</button>
                     <button class="btn-warning" onclick="edit(${i})">修改</button>
                     <button class="btn-danger" onclick="del(${i})">删</button>
                 </td>
             </tr>`
         })
-        listEl.innerHTML = html
+        listEl.innerHTML=html
+        initCoalSelects()
     }
-
-    function add() {
+    function add(){
         const name = document.getElementById('name').value.trim()
-        if (!name) return alert('请填写名称')
-        const numericFields = ['ash', 'sulfur', 'vol', 'bond', 'water', 'y', 'heat', 'cost']
-        for (const field of numericFields) {
-            const val = document.getElementById(field).value
-            if (val === '') continue
-            const num = parseFloat(val)
-            if (isNaN(num)) {
-                return alert(`${getFieldName(field)}必须为数字`)
-            }
-            if (field !== 'cost' && (num < 0 || num > 100)) {
-                return alert(`${getFieldName(field)}必须在0-100之间`)
-            }
-            if (field === 'cost' && num < 0) {
-                return alert(`${getFieldName(field)}不能为负数`)
-            }
-        }
-
+        if(!name)return alert('请填写名称')
         const item = {
-            name,
-            ash: document.getElementById('ash').value,
-            sulfur: document.getElementById('sulfur').value,
-            vol: document.getElementById('vol').value,
-            bond: document.getElementById('bond').value,
-            water: document.getElementById('water').value,
-            y: document.getElementById('y').value,
-            heat: document.getElementById('heat').value,
-            cost: document.getElementById('cost').value,
-            rock: currentRockBase64,
-            rockData: Array(10).fill(0)
+            name,ash:document.getElementById('ash').value,sulfur:document.getElementById('sulfur').value,
+            vol:document.getElementById('vol').value,bond:document.getElementById('bond').value,
+            water:document.getElementById('water').value,y:document.getElementById('y').value,
+            heat:document.getElementById('heat').value,cost:document.getElementById('cost').value,
+            rock:currentRockBase64,rockData:Array(10).fill(0)
         }
         db.push(item)
         saveToLocal()
         clearForm()
         alert('添加成功')
     }
-
-    function getFieldName(field) {
-        const map = {
-            ash: '灰分',
-            sulfur: '硫',
-            vol: '挥发',
-            bond: '粘结',
-            water: '水分',
-            y: 'Y值',
-            heat: '热强',
-            cost: '成本'
-        }
-        return map[field] || field
+    function del(index){if(!confirm('确认删除？'))return;db.splice(index,1);saveToLocal();calcWeightAvg()}
+    function edit(index){
+        editIndex=index
+        const item=db[index]
+        document.getElementById('name').value=item.name
+        document.getElementById('ash').value=item.ash
+        document.getElementById('sulfur').value=item.sulfur
+        document.getElementById('vol').value=item.vol
+        document.getElementById('bond').value=item.bond
+        document.getElementById('water').value=item.water
+        document.getElementById('y').value=item.y
+        document.getElementById('heat').value=item.heat
+        document.getElementById('cost').value=item.cost
+        currentRockBase64=item.rock||''
+        document.getElementById('rockPreview').src=currentRockBase64
+        document.getElementById('rockPreview').style.display=currentRockBase64?'block':'none'
+        document.getElementById('updateBtn').style.display='inline-block'
     }
-
-    function del(index) {
-        if (!confirm('确认删除？删除后不可恢复')) return
-        db.splice(index, 1)
-        saveToLocal()
-        calcAvg()
-    }
-
-    function edit(index) {
-        editIndex = index
-        const item = db[index]
-        document.getElementById('name').value = item.name
-        document.getElementById('ash').value = item.ash
-        document.getElementById('sulfur').value = item.sulfur
-        document.getElementById('vol').value = item.vol
-        document.getElementById('bond').value = item.bond
-        document.getElementById('water').value = item.water
-        document.getElementById('y').value = item.y
-        document.getElementById('heat').value = item.heat
-        document.getElementById('cost').value = item.cost
-        currentRockBase64 = item.rock || ''
-        document.getElementById('rockPreview').src = currentRockBase64
-        document.getElementById('rockPreview').style.display = currentRockBase64 ? 'block' : 'none'
-        document.getElementById('updateBtn').style.display = 'inline-block'
-    }
-
-    function updateSave() {
-        if (editIndex === -1) return
-        const name = document.getElementById('name').value.trim()
-        if (!name) return alert('请填写名称')
-        
-        const numericFields = ['ash', 'sulfur', 'vol', 'bond', 'water', 'y', 'heat', 'cost']
-        for (const field of numericFields) {
-            const val = document.getElementById(field).value
-            if (val === '') continue
-            const num = parseFloat(val)
-            if (isNaN(num)) {
-                return alert(`${getFieldName(field)}必须为数字`)
-            }
-            if (field !== 'cost' && (num < 0 || num > 100)) {
-                return alert(`${getFieldName(field)}必须在0-100之间`)
-            }
-            if (field === 'cost' && num < 0) {
-                return alert(`${getFieldName(field)}不能为负数`)
-            }
-        }
-
-        db[editIndex] = {
-            ...db[editIndex],
-            name,
-            ash: document.getElementById('ash').value,
-            sulfur: document.getElementById('sulfur').value,
-            vol: document.getElementById('vol').value,
-            bond: document.getElementById('bond').value,
-            water: document.getElementById('water').value,
-            y: document.getElementById('y').value,
-            heat: document.getElementById('heat').value,
-            cost: document.getElementById('cost').value,
-            rock: currentRockBase64
-        }
+    function updateSave(){
+        if(editIndex===-1)return
+        const name=document.getElementById('name').value.trim()
+        if(!name)return alert('请填写名称')
+        db[editIndex]={...db[editIndex],name,ash:document.getElementById('ash').value,sulfur:document.getElementById('sulfur').value,vol:document.getElementById('vol').value,bond:document.getElementById('bond').value,water:document.getElementById('water').value,y:document.getElementById('y').value,heat:document.getElementById('heat').value,cost:document.getElementById('cost').value,rock:currentRockBase64}
         saveToLocal()
         clearForm()
-        calcAvg()
+        calcWeightAvg()
         alert('修改成功')
     }
+    function clearForm(){document.querySelectorAll('.form input').forEach(i=>i.value='');currentRockBase64='';document.getElementById('rockPreview').style.display='none';document.getElementById('updateBtn').style.display='none';editIndex=-1}
+    function saveToLocal(){localStorage.setItem('coalDB',JSON.stringify(db));renderDB()}
 
-    function clearForm() {
-        document.querySelectorAll('.form input').forEach(i => i.value = '')
-        currentRockBase64 = ''
-        document.getElementById('rockPreview').style.display = 'none'
-        document.getElementById('updateBtn').style.display = 'none'
-        editIndex = -1
-    }
-
-    function saveToLocal() {
-        localStorage.setItem('coalDB', JSON.stringify(db))
-        renderDB()
-    }
-
-    // ========== 右侧表格 ==========
-    function renderTable() {
-        const body = document.getElementById('tableBody')
-        let html = ''
-        for (let i = 1; i <= 15; i++) {
-            html += `
-            <tr>
-                <td>${i}</td>
-                <td><input class="col-name" data-row="${i}" oninput="autoFill(this)"></td>
-                <td><input class="col-ash" data-row="${i}" readonly></td>
-                <td><input class="col-sulfur" data-row="${i}" readonly></td>
-                <td><input class="col-vol" data-row="${i}" readonly></td>
-                <td><input class="col-bond" data-row="${i}" readonly></td>
-                <td><input class="col-water" data-row="${i}" readonly></td>
-                <td><input class="col-y" data-row="${i}" readonly></td>
-                <td><input class="col-heat" data-row="${i}" readonly></td>
-                <td><input class="col-cost" data-row="${i}" readonly></td>
-                <td><input class="col-rate" data-row="${i}" type="number" placeholder="比例" min="0" max="100" oninput="calcAvg()"></td>
-                <td><button onclick="delRow(${i})" class="btn-danger">删除</button></td>
-            </tr>`
+    // 核心修改：计算八项指标的加权值（移除综合加权）
+    function calcWeightAvg() {
+        let totalRate=0
+        const rates=[]
+        
+        // 1. 获取所有列的比例并计算总和
+        for(let i=1;i<=10;i++){
+            const rate=parseFloat(document.querySelector(`.rate-input[data-col="${i}"]`).value)||0
+            rates.push(rate)
+            totalRate+=rate
         }
-        html += `
-        <tr class="avg-row">
-            <td>平均值</td><td>—</td>
-            <td id="avg-ash">0.00</td><td id="avg-sulfur">0.00</td><td id="avg-vol">0.00</td>
-            <td id="avg-bond">0.00</td><td id="avg-water">0.00</td><td id="avg-y">0.00</td>
-            <td id="avg-heat">0.00</td><td id="avg-cost">0.00</td><td>—</td>
-            <td><button onclick="showAvgRockModal()" class="btn-purple">岩相</button></td>
-        </tr>`
-        body.innerHTML = html
-    }
 
-    function addToTable(index) {
-        const data = db[index]
-        for (let i = 1; i <= 15; i++) {
-            const inp = document.querySelector(`.col-name[data-row="${i}"]`)
-            if (!inp.value.trim()) {
-                inp.value = data.name
-                autoFill(inp)
-                return
+        // 2. 初始化各指标加权总和
+        let ashSum = 0, sulfurSum = 0, volSum = 0, bondSum = 0
+        let waterSum = 0, ySum = 0, heatSum = 0, costSum = 0
+
+        // 3. 计算各指标加权总和
+        if(totalRate>0){
+            for(let i=1;i<=10;i++){
+                const coal = coalColumnData[i]
+                const rate = rates[i-1]
+                
+                // 单项指标加权
+                ashSum += coal.ash * rate
+                sulfurSum += coal.sulfur * rate
+                volSum += coal.vol * rate
+                bondSum += coal.bond * rate
+                waterSum += coal.water * rate
+                ySum += coal.y * rate
+                heatSum += coal.heat * rate
+                costSum += coal.cost * rate
             }
+
+            // 4. 计算加权平均值并更新到独立表格
+            document.getElementById('result-ash').textContent = (ashSum / totalRate).toFixed(2)
+            document.getElementById('result-sulfur').textContent = (sulfurSum / totalRate).toFixed(2)
+            document.getElementById('result-vol').textContent = (volSum / totalRate).toFixed(2)
+            document.getElementById('result-bond').textContent = (bondSum / totalRate).toFixed(2)
+            document.getElementById('result-water').textContent = (waterSum / totalRate).toFixed(2)
+            document.getElementById('result-y').textContent = (ySum / totalRate).toFixed(2)
+            document.getElementById('result-heat').textContent = (heatSum / totalRate).toFixed(2)
+            document.getElementById('result-cost').textContent = (costSum / totalRate).toFixed(2)
+        }else{
+            // 比例总和为0时清空所有结果
+            document.getElementById('result-ash').textContent = '0.00'
+            document.getElementById('result-sulfur').textContent = '0.00'
+            document.getElementById('result-vol').textContent = '0.00'
+            document.getElementById('result-bond').textContent = '0.00'
+            document.getElementById('result-water').textContent = '0.00'
+            document.getElementById('result-y').textContent = '0.00'
+            document.getElementById('result-heat').textContent = '0.00'
+            document.getElementById('result-cost').textContent = '0.00'
         }
-        alert('表格已满，无法添加更多数据')
+
+        // 计算岩相加权
+        calcRockWeightAvg(rates,totalRate)
     }
 
-    function delRow(row) {
-        const sel = `[data-row="${row}"]`
-        document.querySelector(`.col-name${sel}`).value = ''
-        document.querySelector(`.col-ash${sel}`).value = ''
-        document.querySelector(`.col-sulfur${sel}`).value = ''
-        document.querySelector(`.col-vol${sel}`).value = ''
-        document.querySelector(`.col-bond${sel}`).value = ''
-        document.querySelector(`.col-water${sel}`).value = ''
-        document.querySelector(`.col-y${sel}`).value = ''
-        document.querySelector(`.col-heat${sel}`).value = ''
-        document.querySelector(`.col-cost${sel}`).value = ''
-        document.querySelector(`.col-rate${sel}`).value = ''
-        calcAvg()
-    }
-
-    function autoFill(el) {
-        const name = el.value.trim()
-        const row = el.dataset.row
-        const tar = db.find(x => x.name === name)
-        if (!tar) {
-            const fields = ['ash', 'sulfur', 'vol', 'bond', 'water', 'y', 'heat', 'cost']
-            fields.forEach(field => {
-                document.querySelector(`.col-${field}[data-row="${row}"]`).value = ''
-            })
-            return
-        }
-        setCell(row, 'ash', tar.ash)
-        setCell(row, 'sulfur', tar.sulfur)
-        setCell(row, 'vol', tar.vol)
-        setCell(row, 'bond', tar.bond)
-        setCell(row, 'water', tar.water)
-        setCell(row, 'y', tar.y)
-        setCell(row, 'heat', tar.heat)
-        setCell(row, 'cost', tar.cost)
-        calcAvg()
-    }
-
-    function setCell(row, typ, val) {
-        document.querySelector(`.col-${typ}[data-row="${row}"]`).value = parseFloat(val || 0).toFixed(2)
-    }
-
-    // ========== 加权平均计算 ==========
-    function calcAvg() {
-        const cols = ['ash', 'sulfur', 'vol', 'bond', 'water', 'y', 'heat', 'cost']
-        let totalRate = 0
-        for (let i = 1; i <= 15; i++) {
-            const r = document.querySelector(`.col-rate[data-row="${i}"]`).value
-            totalRate += parseFloat(r) || 0
-        }
-        document.getElementById('rateSumTip').textContent = `比例总和：${totalRate.toFixed(2)}%（建议为100%）`
-        document.getElementById('rateSumTip').style.color = Math.abs(totalRate - 100) < 1 ? '#1dd1a1' : '#ff6b6b'
-
-        cols.forEach(c => {
-            let total = 0
-            for (let i = 1; i <= 15; i++) {
-                const v = document.querySelector(`.col-${c}[data-row="${i}"]`).value
-                const r = document.querySelector(`.col-rate[data-row="${i}"]`).value
-                total += (parseFloat(v) || 0) * (parseFloat(r) || 0)
+    // 岩相加权计算
+    function calcRockWeightAvg(rates,totalRate){
+        const sum=Array(10).fill(0)
+        if(totalRate>0){
+            for(let i=1;i<=10;i++){
+                const rockData=coalColumnData[i].rockData
+                const rate=rates[i-1]
+                for(let c=0;c<10;c++) sum[c]+=rockData[c]*rate
             }
-            document.getElementById(`avg-${c}`).textContent = totalRate > 0 ? (total / totalRate).toFixed(2) : '0.00'
-        })
-        calcRockWeightAvg()
-    }
-
-    function calcRockWeightAvg() {
-        let totalRate = 0
-        const rates = []
-        for (let i = 1; i <= 15; i++) {
-            const r = parseFloat(document.querySelector(`.col-rate[data-row="${i}"]`).value) || 0
-            rates.push(r)
-            totalRate += r
+            window.currentRockAvg=sum.map(v=>(v/totalRate).toFixed(2))
+        }else{
+            window.currentRockAvg=Array(10).fill('0.00')
         }
-        const sum = Array(10).fill(0)
-        if (totalRate > 0) {
-            for (let i = 1; i <= 15; i++) {
-                const name = document.querySelector(`.col-name[data-row="${i}"]`).value.trim()
-                const item = db.find(x => x.name === name)
-                if (!item || !item.rockData) continue
-                const rd = item.rockData
-                const rt = rates[i - 1]
-                for (let c = 0; c < 10; c++) sum[c] += (parseFloat(rd[c]) || 0) * rt
-            }
-        }
-        window.currentRockAvg = sum.map(v => (totalRate > 0 ? (v / totalRate).toFixed(2) : '0.00'))
     }
 
-    // 打开岩相弹窗（移除图表更新逻辑）
-    function showAvgRockModal() {
-        const data = window.currentRockAvg || Array(10).fill('0.00')
-        const sum = data.reduce((acc, val) => acc + parseFloat(val || 0), 0)
-        document.getElementById('avgRockSum').textContent = sum.toFixed(2)
-        document.getElementById('avgRockSum').style.color = Math.abs(sum - 100) < 1 ? '#1dd1a1' : '#ff6b6b'
-
-        for (let i = 0; i < 10; i++) {
-            document.getElementById(`c${i + 1}`).textContent = data[i]
-        }
-        document.getElementById('avgRockModal').style.display = 'flex'
+    // 清空加权表
+    function clearWeightTable(){
+        if(!confirm('确认清空？'))return
+        // 清空选择和比例
+        document.querySelectorAll('.coal-select').forEach(s=>s.value='')
+        document.querySelectorAll('.rate-input').forEach(i=>i.value='')
+        // 清空独立结果表格
+        document.getElementById('result-ash').textContent = '0.00'
+        document.getElementById('result-sulfur').textContent = '0.00'
+        document.getElementById('result-vol').textContent = '0.00'
+        document.getElementById('result-bond').textContent = '0.00'
+        document.getElementById('result-water').textContent = '0.00'
+        document.getElementById('result-y').textContent = '0.00'
+        document.getElementById('result-heat').textContent = '0.00'
+        document.getElementById('result-cost').textContent = '0.00'
+        // 重置数据
+        for(let i=1;i<=10;i++) coalColumnData[i]={name:'',ash:0,sulfur:0,vol:0,bond:0,water:0,y:0,heat:0,cost:0,rockData:Array(10).fill(0)}
+        window.currentRockAvg=Array(10).fill('0.00')
     }
 
-    function closeAvgRockModal() {
-        document.getElementById('avgRockModal').style.display = 'none'
+    // 岩相加权弹窗
+    function showAvgRockModal(){
+        const data=window.currentRockAvg||Array(10).fill('0.00')
+        const sum=data.reduce((a,v)=>a+parseFloat(v||0),0)
+        document.getElementById('avgRockSum').textContent=sum.toFixed(2)
+        for(let i=0;i<10;i++)document.getElementById(`c${i+1}`).textContent=data[i]
+        document.getElementById('avgRockModal').style.display='flex'
     }
+    function closeAvgRockModal(){document.getElementById('avgRockModal').style.display='none'}
 
-    function clearTable() {
-        if (!confirm('确认清空右侧表格？清空后不可恢复')) return
-        document.querySelectorAll('#tableBody input').forEach(i => i.value = '')
-        calcAvg()
-    }
-
-    // ========== 导入导出功能 ==========
-    function exportData() {
-        if (db.length === 0) {
-            alert('数据库为空，无需导出')
-            return
-        }
-        const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' })
-        const a = document.createElement('a')
-        a.href = URL.createObjectURL(blob)
-        a.download = `煤质数据库_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`
+    // 导入导出
+    function exportData(){
+        if(db.length===0)return alert('数据库为空')
+        const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'})
+        const a=document.createElement('a')
+        a.href=URL.createObjectURL(blob)
+        a.download=`煤质数据库_${new Date().toLocaleDateString().replace(/\//g,'-')}.json`
         a.click()
         URL.revokeObjectURL(a.href)
     }
-
-    function importData(event) {
-        const file = event.target.files[0]
-        if (!file) return
-        const reader = new FileReader()
-        reader.onload = function(e) {
-            try {
-                const importedData = JSON.parse(e.target.result)
-                if (!Array.isArray(importedData)) {
-                    throw new Error('导入数据格式错误，必须为数组')
-                }
-                if (!confirm(`将导入${importedData.length}条数据，原有数据将被覆盖，是否继续？`)) {
-                    return
-                }
-                db.length = 0
-                db.push(...importedData)
-                saveToLocal()
-                calcAvg()
-                alert('导入成功')
-            } catch (err) {
-                alert(`导入失败：${err.message}`)
-            }
+    function importData(event){
+        const file=event.target.files[0]
+        if(!file)return
+        const reader=new FileReader()
+        reader.onload=e=>{
+            try{
+                const data=JSON.parse(e.target.result)
+                if(!Array.isArray(data))throw new Error('格式错误')
+                if(!confirm(`导入${data.length}条数据，覆盖原有数据？`))return
+                db.length=0;db.push(...data);saveToLocal();calcWeightAvg();alert('导入成功')
+            }catch(err){alert(`失败：${err.message}`)}
         }
         reader.readAsText(file)
-        document.getElementById('fileImport').value = ''
+        document.getElementById('fileImport').value=''
     }
 </script>
 </body>
